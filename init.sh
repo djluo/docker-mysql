@@ -5,7 +5,7 @@ if [ -f /mysql/.init_lock ];then
   exit 127
 fi
 
-echo -n "mysql init: "
+#echo -n "mysql init: "
 
 PW=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
 HOST=`hostname`
@@ -22,10 +22,11 @@ __wait_sock() {
   while [ $i -lt 120 ]
   do
     [ -s "${SOCK}" ] && break
-    echo -n "."
+    #echo -n "."
     sleep 1
     let i+=1
   done
+  #echo
 }
 __wait_sock
 
