@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ ! -f "/mysql/.init_lock" ];then
+if [ ! -f "/mysql/data/.init_lock" ];then
   /mysql/init.sh
 fi
 

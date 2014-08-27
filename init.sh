@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -f /mysql/.init_lock ];then
-  echo "/mysql/.init_lock exists..."
+if [ -f /mysql/data/.init_lock ];then
+  echo "/mysql/data/.init_lock exists..."
   exit 127
 fi
 
@@ -46,7 +46,7 @@ EOF
 /usr/bin/mysqladmin -S ${SOCK} shutdown -uroot -p${PW} >/dev/null
 #__wait_sock
 
-touch /mysql/.init_lock
+touch /mysql/data/.init_lock
 
 echo "======================================================"
 echo "The initial password for the mysql(root): ${PW}"
