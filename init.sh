@@ -34,6 +34,7 @@ __wait_sock
 grant all privileges on *.* to root@"${HOST}"   identified by "${PW}";
 grant all privileges on *.* to root@"localhost" identified by "${PW}";
 grant all privileges on *.* to root@"127.0.0.1" identified by "${PW}";
+grant all privileges on *.* to root@"%"         identified by "${PW}";
 
 drop user root@'::1';
 delete from mysql.user where user='';
