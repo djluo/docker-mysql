@@ -49,7 +49,7 @@ sudo mkdir -p /home/coop/appname/mysql/{etc,log,logs,data}
 sudo cp ~/docker-mysql/my.cnf /home/coop/appname/mysql/etc/
 </pre>
 3. 启动:
-```shell
+<pre>
 cd /home/coop/appname/mysql/
 CID=$(sudo docker run -d -p 3306:3306 \
     -v `pwd`/etc/:/mysql/etc/:ro      \
@@ -57,13 +57,13 @@ CID=$(sudo docker run -d -p 3306:3306 \
     -v `pwd`/logs/:/mysql/logs/       \
     -v `pwd`/data/:/mysql/data/       \
     --name appname_db mysql)
-```
+</pre>
 4. 修改初始密码(可选):
-```shell
+<pre>
 sudo docker run -ti --volumes-from $CID --rm mysql mysql -p
-mysql> grant all privileges on *.* to root@"${CID}"    identified by "new_password";
-mysql> grant all privileges on *.* to root@"localhost" identified by "new_password";
-mysql> grant all privileges on *.* to root@"127.0.0.1" identified by "new_password";
+mysql> grant all privileges on \*.\* to root@"${CID}"    identified by "newpassword";
+mysql> grant all privileges on \*.\* to root@"localhost" identified by "newpassword";
+mysql> grant all privileges on \*.\* to root@"127.0.0.1" identified by "newpassword";
 mysql> flush privileges;
-```
+</pre>
 5. 导入应用数据库。
