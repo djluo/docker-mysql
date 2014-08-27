@@ -21,7 +21,7 @@ __wait_sock() {
   local i=1
   while [ $i -lt 120 ]
   do
-    [ -s "${SOCK}" ] && break
+    [ -S "${SOCK}" ] && break
     #echo -n "."
     sleep 1
     let i+=1
