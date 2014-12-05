@@ -6,10 +6,15 @@
 PW=""
 HOST=`hostname`
 SOCK="/mysql/logs/mysql.sock"
+User_Id="${User_Id:=2019}"
+
+/usr/sbin/useradd -u ${User_Id} -m -s /bin/false docker
 
 /usr/bin/mysql_install_db --datadir=/mysql/data >/dev/null
 
-/usr/bin/mysqld_safe --socket=${SOCK} >/dev/null &
+chown -R docker.docker /mysql/data /mysql/log /mysql/logs
+
+/usr/bin/mysqld_safe >/dev/null &
 
 __wait_sock() {
   local i=1
@@ -45,6 +50,8 @@ EOF
 /usr/bin/mysqladmin -S ${SOCK} -ushutdown shutdown >/dev/null
 #__wait_sock
 
+chmod 644 /mysql/logs/error.log /mysql/logs/slowquery.log
+chmod 750 /mysql/log /mysql/data
 touch /mysql/data/.init_lock
 
 echo "======================================================"
