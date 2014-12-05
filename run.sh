@@ -144,14 +144,16 @@ _start() {
   local cstatus=$?
 
   if [ $cstatus -eq 0 ] ;then
-      echo -en "is running\t"
-      retvar=0
+    echo -en "is running\t"
+    retvar=0
   elif [ $cstatus -eq 1 ];then
     sudo docker start $app_name >/dev/null
-    retvar=$?
+    _check_container
+    [ $? -eq 0 ] && retvar=0
   elif [ $cstatus -eq 3 ];then
     _run >/dev/null
-    retvar=$?
+    _check_container
+    [ $? -eq 0 ] && retvar=0
   else
     echo -en "Unknown\t"
     retvar=1
@@ -180,10 +182,12 @@ _stop() {
 
   if [ $cstatus -eq 0 ] ;then
     sudo docker exec ${app_name} \
-      mysqladmin -S /mysql/logs/mysql.sock -ushutdown shutdown
+      mysqladmin -S /mysql/logs/mysql.sock -ushutdown shutdown 2>/dev/null
 
-    retvar=$?
     _wait "stop" ${current_dir}/logs/mysql.sock
+
+    _check_container
+    [ $? -eq 1 ] && retvar=0
   elif [ $cstatus -eq 1 ];then
     echo -en "is stoped\t"
     retvar=0
@@ -196,6 +200,7 @@ _stop() {
     echo "OK"
   else
     echo "Failed"
+    exit 127
   fi
 }
 _remove(){
