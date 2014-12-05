@@ -75,7 +75,6 @@ _wait() {
 }
 
 _check_container() {
-  local app_name="$1"
   local status=""
   status=$(sudo docker inspect --format='{{ .State.Running }}' $app_name 2>/dev/null)
   local retvar=$?
@@ -89,8 +88,7 @@ _check_container() {
   fi
 }
 _status() {
-  local app_name="$1"
-  _check_container ${app_name}
+  _check_container
   local cstatus=$?
 
   echo -en "Status container: ${app_name} \t"
@@ -113,11 +111,12 @@ _run() {
   #   call: _run debug
   local mode="-d"
   local my_cnf=""
+  local name="$app_name"
 
   if [ "x$1" == "xdebug" ];then
     shift
     mode="-ti --rm"
-    app_name="debug_$app_name"
+    name="debug_$app_name"
     cmd="/bin/bash -l"
     unset port
   else
@@ -133,16 +132,15 @@ _run() {
     -v ${current_dir}/log/:/mysql/log/   \
     -v ${current_dir}/logs/:/mysql/logs/ \
     -v ${current_dir}/data/:/mysql/data/ \
-    --name ${app_name} ${images} \
+    --name ${name} ${images} \
     $cmd
 }
 _start() {
-  local app_name="$1"
   local retvar=1
 
   echo -en "Start  container: ${app_name} \t"
 
-  _check_container ${app_name}
+  _check_container
   local cstatus=$?
 
   if [ $cstatus -eq 0 ] ;then
@@ -173,12 +171,11 @@ _start() {
   fi
 }
 _stop() {
-  local app_name="$1"
   local retvar=1
 
   echo -en "Stop   container: ${app_name} \t"
 
-  _check_container ${app_name}
+  _check_container
   local cstatus=$?
 
   if [ $cstatus -eq 0 ] ;then
@@ -202,12 +199,11 @@ _stop() {
   fi
 }
 _remove(){
-  local app_name="$1"
   local retvar=1
 
   echo -en "Remove container: ${app_name} \t"
 
-  _check_container ${app_name}
+  _check_container
   local cstatus=$?
 
   if [ $cstatus -eq 1 ];then
@@ -229,29 +225,29 @@ _remove(){
 
 case "$action" in
   start)
-    _start $app_name
+    _start
     ;;
   stop)
-    _stop $app_name
+    _stop
     ;;
   debug)
     _run debug
     ;;
   restart)
-    _stop  $app_name
-    _start $app_name
+    _stop
+    _start
     ;;
   rebuild)
-    _stop   $app_name
-    _remove $app_name
-    _start  $app_name
+    _stop
+    _remove
+    _start
     ;;
   remove)
-    _stop   $app_name
-    _remove $app_name
+    _stop
+    _remove
     ;;
   status)
-    _status $app_name
+    _status
     ;;
   *)
     _usage
