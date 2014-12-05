@@ -1,0 +1,6 @@
+.git
+*.swp
+data
+log
+logs
+.lock_source
