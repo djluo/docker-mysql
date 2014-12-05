@@ -75,9 +75,9 @@ _wait() {
 }
 
 _check_container() {
-  local app="$1"
+  local app_name="$1"
   local status=""
-  status=$(sudo docker inspect --format='{{ .State.Running }}' $app 2>/dev/null)
+  status=$(sudo docker inspect --format='{{ .State.Running }}' $app_name 2>/dev/null)
   local retvar=$?
 
   if [ $retvar -eq 0 ] ;then
@@ -137,10 +137,10 @@ _run() {
     $cmd
 }
 _start() {
-  local app="$1"
+  local app_name="$1"
   local retvar=1
 
-  echo -en "Start  container: ${app} \t"
+  echo -en "Start  container: ${app_name} \t"
 
   _check_container ${app_name}
   local cstatus=$?
@@ -149,7 +149,7 @@ _start() {
       echo -en "is running\t"
       retvar=0
   elif [ $cstatus -eq 1 ];then
-    sudo docker start $app >/dev/null
+    sudo docker start $app_name >/dev/null
     retvar=$?
   elif [ $cstatus -eq 3 ];then
     _run >/dev/null
@@ -164,7 +164,7 @@ _start() {
   if [ $retvar -eq 0 ] && [ -S ${current_dir}/logs/mysql.sock ];then
     # 写入当前应用配置
     if [ ! -f  ${current_dir}/.lock_source ];then
-      echo "app_name='${app}'" > ${current_dir}/.lock_source
+      echo "app_name='${app_name}'" > ${current_dir}/.lock_source
       echo "port='${port}'"    >>${current_dir}/.lock_source
     fi
     echo "OK"
