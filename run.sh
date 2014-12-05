@@ -120,7 +120,7 @@ _run() {
     cmd="/bin/bash -l"
     unset port
   else
-    cmd="/mysql/run.sh"
+    cmd="/mysql/cmd.sh"
   fi
 
   [ -f ${current_dir}/my.cnf ] && \

@@ -24,10 +24,9 @@ RUN export http_proxy="http://172.17.42.1:80/" \
     && rm -rf etc/mysql/my.cnf     \
     && rm -rf etc/mysql/debian.cnf \
     && ln -sv /mysql/my.cnf /etc/mysql/my.cnf     \
-    && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf \
-    && chmod +x /mysql/run.sh /mysql/init.sh
+    && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf
 
 EXPOSE  3306
 WORKDIR /mysql
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
-CMD     [ "/mysql/run.sh" ]
+CMD     [ "/mysql/cmd.sh" ]
