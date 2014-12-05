@@ -15,13 +15,12 @@ images="mysql:2"
 
 action="$1"    # start or stop ...
 app_name="$2"  # is container name
-shift
-shift
-port="$@"
+app_port="$3"  # master port
 
 app_name=${app_name:=mysql-db}
-port="${port:=-p 127.0.0.1:3306:3306}"
+app_port=${app_port:=3306}
 
+port="-p $app_port:3306"
 
 # 读取当前应用配置
 [ -f  ${current_dir}/.lock_source ] && source ${current_dir}/.lock_source
@@ -32,10 +31,9 @@ if ! `echo ${app_name} | egrep "^[a-z][a-z0-9_-]{0,20}$" >/dev/null` ;then
   exit 127
 fi
 if ! `echo ${port} | egrep "^-p[ p0-9:.-]{0,100}$" >/dev/null` ;then
-  echo "port bad: $port"
+  echo "app_port bad: $app_port"
   exit 128
 fi
-
 
 # 检查镜像是否存在
 #_check_images() {
@@ -128,6 +126,7 @@ _run() {
 
   sudo docker run $mode $port \
     -e "TZ=Asia/Shanghai"     \
+    -e "User_Id=$app_port"    \
     $my_cnf \
     -v ${current_dir}/log/:/mysql/log/   \
     -v ${current_dir}/logs/:/mysql/logs/ \
