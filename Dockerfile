@@ -2,26 +2,31 @@
 #
 # Version 1
 
-FROM centos
+FROM debian
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
-RUN rpm -ivh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
-RUN rpm --import /etc/pki/rpm-gpg/RPM*
-RUN yum --disablerepo=mysql56-community    \
-        --enablerepo=mysql55-community     \
-        -y install mysql-community-server  \
-                   mysql-community-client  \
-                   hostname; yum clean all
+ADD ./setup/sources.list /etc/apt/
+ADD ./setup/ /mysql/
 
-RUN mkdir -p /mysql/{etc,data,log,logs}
-WORKDIR      /mysql
-ADD          ./run.sh  /mysql/run.sh
-ADD          ./init.sh /mysql/init.sh
-RUN          chmod +x  /mysql/{run.sh,init.sh}
+ENV DEBIAN_FRONTEND noninteractive
 
-ADD          ./my.cnf  /mysql/etc/my.cnf
-RUN          mv /etc/my.cnf{,.bak} && ln -sv /mysql/etc/my.cnf /etc/
+RUN http_proxy="http://192.168.1.175:80/" apt-get update   \
+    && http_proxy="http://192.168.1.175:80/" apt-get install -y mysql-client mysql-server \
+    && apt-get clean \
+    && rm -rf usr/share/locale \
+    && rm -rf usr/share/man    \
+    && rm -rf usr/share/doc    \
+    && rm -rf usr/share/info   \
+    && find var/lib/apt -type f -exec rm -fv {} \; \
+    && /usr/sbin/useradd -u 1001 -m docker \
+    && rm -rf etc/mysql/my.cnf     \
+    && rm -rf etc/mysql/debian.cnf \
+    && ln -sv /mysql/my.cnf /etc/mysql/my.cnf     \
+    && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf \
+    && chmod +x /mysql/run.sh /mysql/init.sh
 
-EXPOSE       3306
-VOLUME       ["/mysql/etc", "/mysql/data", "/mysql/log", "/mysql/logs"]
-CMD          [ "/mysql/run.sh" ]
+USER    docker
+EXPOSE  3306
+WORKDIR /mysql
+VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
+CMD     [ "/mysql/run.sh" ]

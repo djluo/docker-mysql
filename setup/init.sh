@@ -1,19 +1,14 @@
-#!/bin/sh
-
-if [ -f /mysql/data/.init_lock ];then
-  echo "/mysql/data/.init_lock exists..."
-  exit 127
-fi
+#!/bin/bash
 
 #echo -n "mysql init: "
 
-PW=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
+PW="Z2AZ3yUMGG8bVG2CWgEi"
 HOST=`hostname`
 SOCK="/mysql/logs/mysql.sock"
 User="${User:=mysql}"
 
-/usr/bin/mysql_install_db --datadir=/mysql/data --user=${User} >/dev/null
-chown ${User}.${User} /mysql/{log,logs}
+/usr/bin/mysql_install_db --datadir=/mysql/data >/dev/null
+chown ${User}.${User} /mysql/{data,log,logs}
 
 /usr/bin/mysqld_safe --socket=${SOCK} >/dev/null &
 
@@ -35,6 +30,9 @@ grant all privileges on *.* to root@"${HOST}"   identified by "${PW}";
 grant all privileges on *.* to root@"localhost" identified by "${PW}";
 grant all privileges on *.* to root@"127.0.0.1" identified by "${PW}";
 grant all privileges on *.* to root@"%"         identified by "${PW}";
+
+grant shutdown on *.* to shutdown@'localhost';
+grant shutdown on *.* to shutdown@'127.0.0.1';
 
 drop user root@'::1';
 delete from mysql.user where user='';
