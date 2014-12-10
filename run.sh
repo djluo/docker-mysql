@@ -13,7 +13,7 @@ current_dir=`readlink -f $0`
 current_dir=`dirname $current_dir`
 cd ${current_dir} && export current_dir
 
-images="by-mysql:4"
+images="by-mysql:5"
 default_name="mysql-db"
 default_port="3306"
 
@@ -52,7 +52,8 @@ _run() {
   sudo docker run $mode $port \
     -e "TZ=Asia/Shanghai"     \
     -e "User_Id=${User_Id}"   \
-    $volume \
+    $volume      \
+    -w "/mysql/" \
     -v ${current_dir}/log/:/mysql/log/   \
     -v ${current_dir}/logs/:/mysql/logs/ \
     -v ${current_dir}/data/:/mysql/data/ \
