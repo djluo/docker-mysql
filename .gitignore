@@ -2,5 +2,5 @@
 data
 log
 logs
-.lock_source
+.config
 *.gz
