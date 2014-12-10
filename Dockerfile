@@ -5,10 +5,9 @@
 FROM debian
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
-ADD ./setup/sources.list /etc/apt/
-ADD ./setup/ /mysql/
-
 ENV DEBIAN_FRONTEND noninteractive
+
+ADD ./sources.list /etc/apt/
 
 RUN export http_proxy="http://172.17.42.1:8080/" \
     && apt-get update \
@@ -26,6 +25,7 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && ln -sv /mysql/my.cnf /etc/mysql/my.cnf     \
     && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf
 
+ADD     ./setup/ /mysql/
 EXPOSE  3306
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
 CMD     [ "/mysql/cmd.sh" ]
