@@ -10,7 +10,7 @@ ADD ./setup/ /mysql/
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN export http_proxy="http://172.17.42.1:80/" \
+RUN export http_proxy="http://172.17.42.1:8080/" \
     && apt-get update \
     && apt-get install -y locales procps mysql-client mysql-server \
     && apt-get clean    \
@@ -27,6 +27,5 @@ RUN export http_proxy="http://172.17.42.1:80/" \
     && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf
 
 EXPOSE  3306
-WORKDIR /mysql
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
 CMD     [ "/mysql/cmd.sh" ]
