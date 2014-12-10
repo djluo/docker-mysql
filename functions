@@ -2,7 +2,7 @@
 # vim:set et ts=2 sw=2:
 
 # Author : djluo
-# version: 1.0(20141210)
+# version: 2.0(20141210)
 
 # 检查镜像是否存在
 #_check_images() {
@@ -21,6 +21,16 @@ _run_debug() {
     name="debug_$app_name"
     cmd="/bin/bash -l"
     unset port
+}
+_exec() {
+  _check_container
+  local retvar=$?
+
+  if [ $retvar -eq 0 ];then
+    sudo docker exec -ti $app_name /bin/bash -l
+  else
+    echo -e "Exec container: ${app_name} \tnot running\tFailed"
+  fi
 }
 
 # 检查输入
@@ -66,7 +76,7 @@ _save_argv(){
   fi
 }
 _usage() {
-  echo "Usage: $0 [start|stop|restart|status|rebuild|remove|debug] [name] [port]"
+  echo "Usage: $0 [start|stop|restart|status|rebuild|remove|debug|exec] [name] [port]"
   echo "     : name current is \"${app_name}\""
   echo "     : port current is \"${port}\""
   echo "     : name defalut is \"${default_name}\""

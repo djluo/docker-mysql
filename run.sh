@@ -137,6 +137,9 @@ case "$action" in
   status)
     _status
     ;;
+  exec)
+    _exec
+    ;;
   *)
     _usage
     ;;
