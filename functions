@@ -1,0 +1,151 @@
+#!/bin/bash
+# vim:set et ts=2 sw=2:
+
+# Author : djluo
+# version: 1.0(20141210)
+
+# 检查镜像是否存在
+#_check_images() {
+#
+#}
+
+## 全局变量
+# default_name
+# default_port
+# app_name
+# port
+
+
+_run_debug() {
+    mode="-ti --rm"
+    name="debug_$app_name"
+    cmd="/bin/bash -l"
+    unset port
+}
+
+# 检查输入
+_check_input() {
+  if ! `echo ${app_name} | egrep "^[a-z][a-z0-9_-]{0,20}$" >/dev/null` ;then
+    echo "app_name bad: $app_name"
+    exit 127
+  fi
+  if ! `echo ${port} | egrep "^-p[ p0-9:.-]{0,100}$" >/dev/null` ;then
+    echo "app_port bad: $app_port"
+    exit 128
+  fi
+}
+
+# 等待mysql真的启停完成
+_wait_mysql_sock() {
+  local SOCK_FILE="$2"
+
+  local try=0
+  while [ $try -lt 300 ]
+  do
+
+    #echo -n .
+    let try+=1
+    sleep 1
+
+    case "$1" in
+      start)
+        [ -S ${SOCK_FILE}   ] && break
+      ;;
+      stop)
+        [ ! -S ${SOCK_FILE} ] && break
+      ;;
+    esac
+  done
+}
+
+_save_argv(){
+  local config="$1"
+  if [ ! -f  ${config} ];then
+    echo "app_name='${app_name}'" > ${config}
+    echo "port='${port}'"        >> ${config}
+  fi
+}
+_usage() {
+  echo "Usage: $0 [start|stop|restart|status|rebuild|remove|debug] [name] [port]"
+  echo "     : name current is \"${app_name}\""
+  echo "     : port current is \"${port}\""
+  echo "     : name defalut is \"${default_name}\""
+  echo "     : port defalut is \"-p 127.0.0.1:${default_port}:${default_port}\""
+  exit 127
+}
+_check_container() {
+  local status=""
+  status=$(sudo docker inspect --format='{{ .State.Running }}' $app_name 2>/dev/null)
+  local retvar=$?
+
+  if [ $retvar -eq 0 ] ;then
+    [ "x$status" == "xtrue"  ] && return 0 # exists and running
+    [ "x$status" == "xfalse" ] && return 1 # exists and stoped
+    return 2 # is images or Unknown
+  else
+    return 3 # No such image or container
+  fi
+}
+_status() {
+  _check_container
+  local cstatus=$?
+
+  echo -en "Status container: ${app_name} \t"
+
+  if [ $cstatus -eq 0 ] ;then
+    echo "exists and running"
+    echo "        and port: ${port}"
+  elif [ $cstatus -eq 1 ];then
+    echo "exists and stoped"
+    echo "        and port: ${port}"
+  elif [ $cstatus -eq 3 ];then
+    echo "not exists"
+  else
+    echo "Unknown\t"
+  fi
+}
+_start_or_run() {
+  _check_container
+  local cstatus=$?
+
+  if [ $cstatus -eq 0 ] ;then
+    echo -en "is running\t"
+    retvar=0
+  elif [ $cstatus -eq 1 ];then
+    sudo docker start $app_name >/dev/null
+    _check_container
+    [ $? -eq 0 ] && retvar=0
+  elif [ $cstatus -eq 3 ];then
+    _run >/dev/null
+    _check_container
+    [ $? -eq 0 ] && retvar=0
+  else
+    echo -en "Unknown\t"
+    retvar=1
+  fi
+}
+_remove(){
+  local retvar=1
+
+  echo -en "Remove container: ${app_name} \t"
+
+  _check_container
+  local cstatus=$?
+
+  if [ $cstatus -eq 1 ];then
+    sudo docker rm ${app_name} >/dev/null
+    retvar=$?
+  fi
+
+  if [ $retvar -eq 0 ];then
+    # rm -f ${current_dir}/.config
+    echo "OK"
+  else
+    echo "Failed"
+  fi
+
+}
+_stop_and_remove() {
+  _stop
+  _remove
+}
