@@ -13,7 +13,7 @@ current_dir=`dirname $0`
 current_dir=`readlink -f $current_dir`
 cd ${current_dir} && export current_dir
 
-images="by-mysql:5.5.40v2"
+images="by-mysql:5.5.40v3"
 default_name="mysql-db"
 default_port="3306"
 
