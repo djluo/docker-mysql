@@ -2,7 +2,7 @@
 # vim:set et ts=2 sw=2:
 
 # Author : djluo
-# version: 2.0(20141210)
+# version: 3.0(20141210)
 
 # 检查镜像是否存在
 #_check_images() {
@@ -14,7 +14,6 @@
 # default_port
 # app_name
 # port
-
 
 _run_debug() {
     mode="-ti --rm"
@@ -123,10 +122,12 @@ _start_or_run() {
     retvar=0
   elif [ $cstatus -eq 1 ];then
     sudo docker start $app_name >/dev/null
+    _wait_container_start
     _check_container
     [ $? -eq 0 ] && retvar=0
   elif [ $cstatus -eq 3 ];then
     _run >/dev/null
+    _wait_container_start
     _check_container
     [ $? -eq 0 ] && retvar=0
   else
@@ -153,9 +154,28 @@ _remove(){
   else
     echo "Failed"
   fi
-
 }
 _stop_and_remove() {
   _stop
   _remove
+}
+_wait_container_stop() {
+  local try=0
+  while [ $try -lt 30 ]
+  do
+    _check_container
+    [ $? -eq 1 ] && break
+    let try+=1
+    sleep 1
+  done
+}
+_wait_container_start() {
+  local try=0
+  while [ $try -lt 30 ]
+  do
+    _check_container
+    [ $? -eq 0 ] && break
+    let try+=1
+    sleep 1
+  done
 }

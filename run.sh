@@ -68,6 +68,7 @@ _start() {
   _start_or_run
 
   _wait_mysql_sock "start" ${current_dir}/logs/mysql.sock
+  _wait_container_start
 
   if [ $retvar -eq 0 ] && [ -S ${current_dir}/logs/mysql.sock ];then
     # 写入当前应用配置
@@ -91,6 +92,7 @@ _stop() {
       mysqladmin -S /mysql/logs/mysql.sock -ushutdown shutdown 2>/dev/null
 
     _wait_mysql_sock "stop" ${current_dir}/logs/mysql.sock
+    _wait_container_stop
 
     _check_container
     local retvar2=$?
