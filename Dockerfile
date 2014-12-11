@@ -1,19 +1,18 @@
 # Mysql Community
 #
-# Version 1
+# Version 2
 
 FROM debian
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
-ENV DEBIAN_FRONTEND noninteractive
-
 ADD ./sources.list /etc/apt/
 
 RUN export http_proxy="http://172.17.42.1:8080/" \
+    && export DEBIAN_FRONTEND=noninteractive     \
     && apt-get update \
     && apt-get install -y locales procps mysql-client mysql-server \
     && apt-get clean    \
-    && unset http_proxy \
+    && unset http_proxy DEBIAN_FRONTEND \
     && localedef -c -i zh_CN -f UTF-8 zh_CN.UTF-8 \
     && rm -rf usr/share/locale \
     && rm -rf usr/share/man    \
