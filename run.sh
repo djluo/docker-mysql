@@ -9,11 +9,11 @@
 # processname: mysql container
 
 # 当前工作目录相关
-current_dir=`readlink -f $0`
-current_dir=`dirname $current_dir`
+current_dir=`dirname $0`
+current_dir=`readlink -f $current_dir`
 cd ${current_dir} && export current_dir
 
-images="by-mysql:5"
+images="by-mysql:5.5.40v2"
 default_name="mysql-db"
 default_port="3306"
 
@@ -96,7 +96,7 @@ _stop() {
 
     _check_container
     local retvar2=$?
-    [ $retvar2 -eq 1 ] && retvar=0 || retvar=$retvar2
+    [ $retvar2 -eq 1 ] && retvar=0
 
   elif [ $cstatus -eq 1 ];then
     echo -en "is stoped\t"
