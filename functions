@@ -16,7 +16,7 @@
 # port
 
 _run_debug() {
-    mode="-ti --rm"
+    mode="-ti --rm -u root:root"
     name="debug_$app_name"
     cmd="/bin/bash -l"
     unset port
