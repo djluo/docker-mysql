@@ -72,6 +72,7 @@ _save_argv(){
   if [ ! -f  ${config} ];then
     echo "app_name='${app_name}'" > ${config}
     echo "port='${port}'"        >> ${config}
+    echo "User_Id='${User_Id}'"  >> ${config}
   fi
 }
 _usage() {
