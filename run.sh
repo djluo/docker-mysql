@@ -13,7 +13,7 @@ current_dir=`dirname $0`
 current_dir=`readlink -f $current_dir`
 cd ${current_dir} && export current_dir
 
-images="by-mysql:5.5.40v3"
+images="docker.xlands-inc.com/baoyu/by-mysql"
 default_name="mysql-db"
 default_port="3306"
 
@@ -47,7 +47,7 @@ _run() {
   [ "x$1" == "xdebug" ] && _run_debug
 
   [ -f ${current_dir}/my.cnf ] && \
-    local volume="-v ${current_dir}/my.cnf:/mysql/etc/my.cnf:ro"
+    local volume="-v ${current_dir}/my.cnf:/mysql/my.cnf:ro"
 
   sudo docker run $mode $port \
     -e "TZ=Asia/Shanghai"     \
