@@ -9,4 +9,4 @@ if [ ! -f "/mysql/data/init_complete" ];then
   /mysql/init.sh
 fi
 
-exec /usr/bin/mysqld_safe -u docker >/dev/null
+exec /usr/bin/mysqld_safe -u docker --user=docker >/dev/null
