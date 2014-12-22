@@ -44,10 +44,11 @@ _run() {
   local name="$app_name"
   local cmd="/mysql/cmd.sh"
 
-  [ "x$1" == "xdebug" ] && _run_debug
+  [ -f ${current_dir}/extra-my.cnf ] \
+    && local volume="-v ${current_dir}/extra-my.cnf:/mysql/extra-my.cnf:ro" \
+    && cmd="$cmd --defaults-extra-file=/mysql/extra-my.cnf"
 
-  [ -f ${current_dir}/my.cnf ] && \
-    local volume="-v ${current_dir}/my.cnf:/mysql/my.cnf:ro"
+  [ "x$1" == "xdebug" ] && _run_debug
 
   sudo docker run $mode $port \
     -e "TZ=Asia/Shanghai"     \
