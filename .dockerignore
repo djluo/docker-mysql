@@ -6,3 +6,8 @@ logs
 .config
 *.gz
 Dockerfile.centos
+images/*
+build.sh
+functions
+README.md
+run.sh
