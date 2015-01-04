@@ -24,6 +24,9 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && ln -sv /mysql/my.cnf /etc/mysql/my.cnf     \
     && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf
 
+# 修复kill失效的问题
+RUN sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
+
 ADD     ./setup/ /mysql/
 EXPOSE  3306
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
