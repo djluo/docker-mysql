@@ -2,7 +2,7 @@
 # vim:set et ts=2 sw=2:
 
 # Author : djluo
-# version: 3.0(20141210)
+# version: 3.2(20141222)
 
 # 检查镜像是否存在
 #_check_images() {
@@ -14,6 +14,9 @@
 # default_port
 # app_name
 # port
+# registry
+
+registry="docker.xlands-inc.com"
 
 _run_debug() {
     mode="-ti --rm -u root:root"

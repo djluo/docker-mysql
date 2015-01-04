@@ -13,7 +13,9 @@ current_dir=`dirname $0`
 current_dir=`readlink -f $current_dir`
 cd ${current_dir} && export current_dir
 
-images="docker.xlands-inc.com/baoyu/mysql:5.5.40v4"
+[ -r "/etc/baoyu/functions"   ] && source "/etc/baoyu/functions"
+
+images="${registry}/baoyu/mysql"
 default_name="mysql-db"
 default_port="3306"
 
@@ -34,7 +36,6 @@ if [ ${#app_port} -gt 6 ];then
   port="-p $app_port:${default_port}"
 fi
 
-[ -r "/etc/baoyu/functions"   ] && source "/etc/baoyu/functions"
 [ -f "${current_dir}/.config" ] && source "${current_dir}/.config"
 
 _check_input
