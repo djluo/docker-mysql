@@ -8,6 +8,7 @@ logs
 Dockerfile.centos
 images/*
 build.sh
-functions
 README.md
-run.sh
+data/
+log/
+logs/
