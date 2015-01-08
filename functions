@@ -2,7 +2,7 @@
 # vim:set et ts=2 sw=2:
 
 # Author : djluo
-# version: 3.2(20141222)
+# version: 4.0(20150105)
 
 # 检查镜像是否存在
 #_check_images() {
@@ -12,16 +12,16 @@
 ## 全局变量
 # default_name
 # default_port
-# app_name
+# container_name
 # port
 # registry
 
 registry="docker.xlands-inc.com"
 
 _run_debug() {
-    mode="-ti --rm -u root:root"
-    name="debug_$app_name"
-    cmd="/bin/bash -l"
+    mode="-ti --rm -u root:root --entrypoint=/bin/bash"
+    name="debug_$container_name"
+    cmd="-l"
     unset port
 }
 _exec() {
@@ -29,21 +29,24 @@ _exec() {
   local retvar=$?
 
   if [ $retvar -eq 0 ];then
-    sudo docker exec -ti $app_name /bin/bash -l
+    sudo docker exec -ti $container_name /bin/bash -l
   else
-    echo -e "Exec container: ${app_name} \tnot running\tFailed"
+    echo -e "Exec container: ${container_name} \tnot running\tFailed"
   fi
 }
 
 # 检查输入
 _check_input() {
-  if ! `echo ${app_name} | egrep "^[a-z][a-z0-9_-]{0,20}$" >/dev/null` ;then
-    echo "app_name bad: $app_name"
+  if ! `echo ${container_name} | egrep "^[a-z][a-z0-9_-]{0,20}$" >/dev/null` ;then
+    echo "container_name bad: $container_name"
     exit 127
   fi
-  if ! `echo ${port} | egrep "^-p[ p0-9:.-]{0,100}$" >/dev/null` ;then
-    echo "app_port bad: $app_port"
-    exit 128
+
+  if [ "x$port" != "x" ];then
+    if ! `echo ${port} | egrep "^-p[ p0-9:.-]{0,100}$" >/dev/null` ;then
+      echo "app_port bad: $app_port"
+      exit 128
+    fi
   fi
 }
 
@@ -54,11 +57,6 @@ _wait_mysql_sock() {
   local try=0
   while [ $try -lt 300 ]
   do
-
-    #echo -n .
-    let try+=1
-    sleep 1
-
     case "$1" in
       start)
         [ -S ${SOCK_FILE}   ] && break
@@ -67,28 +65,32 @@ _wait_mysql_sock() {
         [ ! -S ${SOCK_FILE} ] && break
       ;;
     esac
+
+    #echo -n .
+    let try+=1
+    sleep 1
   done
 }
 
 _save_argv(){
   local config="$1"
   if [ ! -f  ${config} ];then
-    echo "app_name='${app_name}'" > ${config}
+    echo "container_name='${container_name}'" > ${config}
     echo "port='${port}'"        >> ${config}
     echo "User_Id='${User_Id}'"  >> ${config}
   fi
 }
 _usage() {
   echo "Usage: $0 [start|stop|restart|status|rebuild|remove|debug|exec] [name] [port]"
-  echo "     : name current is \"${app_name}\""
+  echo "     : name current is \"${container_name}\""
   echo "     : port current is \"${port}\""
   echo "     : name defalut is \"${default_name}\""
-  echo "     : port defalut is \"-p 127.0.0.1:${default_port}:${default_port}\""
+  echo "     : port defalut is \"-p 172.17.42.1:${default_port}:${default_port}\""
   exit 127
 }
 _check_container() {
   local status=""
-  status=$(sudo docker inspect --format='{{ .State.Running }}' $app_name 2>/dev/null)
+  status=$(sudo docker inspect --format='{{ .State.Running }}' $container_name 2>/dev/null)
   local retvar=$?
 
   if [ $retvar -eq 0 ] ;then
@@ -103,7 +105,7 @@ _status() {
   _check_container
   local cstatus=$?
 
-  echo -en "Status container: ${app_name} \t"
+  echo -en "Status container: ${container_name} \t"
 
   if [ $cstatus -eq 0 ] ;then
     echo "exists and running"
@@ -125,7 +127,7 @@ _start_or_run() {
     echo -en "is running\t"
     retvar=0
   elif [ $cstatus -eq 1 ];then
-    sudo docker start $app_name >/dev/null
+    sudo docker start $container_name >/dev/null
     _wait_container_start
     _check_container
     [ $? -eq 0 ] && retvar=0
@@ -142,13 +144,13 @@ _start_or_run() {
 _remove(){
   local retvar=1
 
-  echo -en "Remove container: ${app_name} \t"
+  echo -en "Remove container: ${container_name} \t"
 
   _check_container
   local cstatus=$?
 
   if [ $cstatus -eq 1 ];then
-    sudo docker rm ${app_name} >/dev/null
+    sudo docker rm ${container_name} >/dev/null
     retvar=$?
   fi
 
@@ -182,4 +184,166 @@ _wait_container_start() {
     let try+=1
     sleep 1
   done
+}
+
+_current_dir() {
+  # 当前工作目录相关
+  # 允许软链接
+  current_dir=`dirname $0`
+  current_dir=`readlink -f $current_dir`
+  cd ${current_dir} && export current_dir
+}
+
+_release_dir() {
+  # 当文件的真是目录相关
+  # 允许软链接
+  release_dir=`readlink -f $0`
+  release_dir=`dirname $release_dir`
+  export release_dir
+}
+
+_container_name() {
+  local current_dir=$1
+  local app num temp
+  app=$(basename $current_dir)
+  temp=$(dirname  $current_dir)
+  num1=$(basename $temp)
+
+  if [ "x$num1" == "xglobal" ];then
+    num1=$(dirname $temp)
+    num1=$(basename $num1)
+    num1="${num1}-g"
+  fi
+
+  container_name="${num1}-${app}"
+}
+
+_port() {
+  if [ "x$port" == "x" ] ;then
+    for num in $app_port
+    do
+      if ! `echo ${num} | egrep "[0-9:.]{0,100}$" >/dev/null` ;then
+        echo "$num Not allowed"
+        exit 127
+      fi
+      port="$port -p $num"
+    done
+    unset num
+  fi
+}
+
+_get_uid() {
+  local user_id="$1"
+  case "$user_id" in
+    uid=*)
+      User_Id=${user_id/uid=/}
+      flag_shift=2
+      ;;
+    *)
+      User_Id="${User_Id:=1000}"
+      flag_shift=1
+      ;;
+  esac
+}
+_is_mysql() {
+  local img=$(basename $images)
+  [ "x$img" == "xmysql" ] && return 0
+  return 1
+}
+_start() {
+  local retvar=1
+  local mysql=0
+
+  echo -en "Start  container: ${container_name} \t"
+
+  _start_or_run
+
+  _wait_container_start
+  if _is_mysql ;then
+    _wait_mysql_sock "start" ${current_dir}/logs/mysql.sock
+    [ ! -S ${current_dir}/logs/mysql.sock ] && mysql=1
+  fi
+
+  if [ $retvar -eq 0 ] && [ $mysql -eq 0 ];then
+    # 写入当前应用配置
+    _save_argv ${current_dir}/docker
+    echo "OK"
+  else
+    echo "Failed"
+  fi
+}
+
+_stop() {
+  local retvar=9
+  local mysql=0
+
+  echo -en "Stop   container: ${container_name} \t"
+
+  _check_container
+  local cstatus=$?
+
+  if [ $cstatus -eq 0 ] ;then
+
+    #sudo docker exec ${container_name} /bin/sh -c "kill 1"
+    sudo docker stop -t 180 ${container_name} >/dev/null
+
+    _wait_container_stop
+    if _is_mysql ;then
+      _wait_mysql_sock "stop" ${current_dir}/logs/mysql.sock
+      [ -S ${current_dir}/logs/mysql.sock ] && mysql=1
+    fi
+
+    _check_container
+    local retvar2=$?
+    [ $retvar2 -eq 1 ] && retvar=0
+
+  elif [ $cstatus -eq 1 ];then
+    echo -en "is stoped\t"
+    retvar=0
+  else
+    echo -en "No such container\t"
+    retvar=1
+  fi
+
+  if [ $retvar -eq 0 ] && [ $mysql -eq 0 ];then
+    echo "OK"
+  else
+    echo "Failed"
+    exit 127
+  fi
+}
+
+_call_action() {
+  local action=$1
+  case "$action" in
+    start)
+      _start
+      ;;
+    stop)
+      _stop
+      ;;
+    debug)
+      _run debug
+      ;;
+    restart)
+      _stop
+      _start
+      ;;
+    rebuild)
+      _stop_and_remove
+      _start
+      ;;
+    remove)
+      _stop_and_remove
+      ;;
+    status)
+      _status
+      ;;
+    exec)
+      _exec
+      ;;
+    *)
+      _usage
+      ;;
+  esac
 }

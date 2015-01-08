@@ -2,18 +2,15 @@
 #
 # Version 2
 
-FROM debian
+FROM       docker.xlands-inc.com/baoyu/debian
 MAINTAINER djluo <dj.luo@baoyugame.com>
-
-ADD ./sources.list /etc/apt/
 
 RUN export http_proxy="http://172.17.42.1:8080/" \
     && export DEBIAN_FRONTEND=noninteractive     \
     && apt-get update \
-    && apt-get install -y locales procps mysql-client mysql-server \
-    && apt-get clean    \
+    && apt-get install -y mysql-client mysql-server \
+    && apt-get clean \
     && unset http_proxy DEBIAN_FRONTEND \
-    && localedef -c -i zh_CN -f UTF-8 zh_CN.UTF-8 \
     && rm -rf usr/share/locale \
     && rm -rf usr/share/man    \
     && rm -rf usr/share/doc    \
@@ -21,13 +18,16 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && find var/lib/apt -type f -exec rm -fv {} \; \
     && rm -rf etc/mysql/my.cnf     \
     && rm -rf etc/mysql/debian.cnf \
-    && ln -sv /mysql/my.cnf /etc/mysql/my.cnf     \
-    && ln -sv /mysql/my.cnf /etc/mysql/debian.cnf
+    && ln -sv /mysql/my.cnf     /etc/mysql/my.cnf \
+    && ln -sv /mysql/debian.cnf /etc/mysql/debian.cnf \
+    && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
 
-# 修复kill失效的问题
-RUN sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
-
-ADD     ./setup/ /mysql/
-EXPOSE  3306
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
-CMD     [ "/mysql/cmd.sh" ]
+
+ADD ./setup/        /mysql/
+ADD ./run.sh        /run.sh
+ADD ./functions     /functions
+ADD ./entrypoint.pl /entrypoint.pl
+
+ENTRYPOINT ["/entrypoint.pl"]
+CMD        ["/usr/bin/mysqld_safe"]

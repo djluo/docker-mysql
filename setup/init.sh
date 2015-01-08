@@ -1,11 +1,9 @@
 #!/bin/bash
-
+#set -x
 #echo -n "mysql init: "
 
-#PW="Z2AZ3yUMGG8bVG2CWgEi"
-PW=""
 HOST=`hostname`
-SOCK="/mysql/logs/mysql.sock"
+SOCK="/mysql/logs/mysql-init.sock"
 
 retvar=1
 
@@ -15,26 +13,27 @@ _error() {
   exit 127
 }
 
-__wait_sock() {
+_wait_sock() {
   local i=1
   while [ $i -lt 300 ]
   do
     [ -S "${SOCK}" ] && break
-    #echo -n "."
     sleep 1
     let i+=1
   done
-  #echo
 }
 
-/usr/bin/mysql_install_db --datadir=/mysql/data >/dev/null || _error "mysql_install_db error?"
+/usr/bin/mysql_install_db \
+  --datadir=/mysql/data >/dev/null || _error "mysql_install_db error?"
 
-chown -R docker.docker /mysql/data /mysql/log /mysql/logs  || _error "chown error?"
+chown -R mysql.mysql /mysql/log  \
+                     /mysql/logs \
+                     /mysql/data
 
-/usr/bin/mysqld_safe >/dev/null &
+/usr/bin/mysqld_safe --socket=${SOCK} >/dev/null &
 [ $? -eq 0 ] || _error "start mysql error?"
 
-__wait_sock
+_wait_sock
 
 [ -S "${SOCK}" ] || _error "not found sock file?"
 
