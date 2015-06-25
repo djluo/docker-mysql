@@ -15,7 +15,7 @@
 # container_name is "dir1-dir2"
 _container_name ${current_dir}
 
-images="${registry}/baoyu/mysql"
+images="${registry}/baoyu/mysql55"
 #default_port="172.17.42.1:3306:3306"
 
 action="$1"    # start or stop ...
@@ -46,6 +46,7 @@ _run() {
     -v ${current_dir}/log/:/mysql/log/   \
     -v ${current_dir}/logs/:/mysql/logs/ \
     -v ${current_dir}/data/:/mysql/data/ \
+    -v ${current_dir}/backup/:/mysql/backup/ \
     --name ${name} ${images} \
     $cmd
 }

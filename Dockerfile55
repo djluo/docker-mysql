@@ -1,0 +1,35 @@
+# vim:set et ts=2 sw=2 syntax=dockerfile:
+
+FROM       docker.xlands-inc.com/baoyu/debian
+MAINTAINER djluo <dj.luo@baoyugame.com>
+
+RUN export http_proxy="http://172.17.42.1:8080/" \
+    && export DEBIAN_FRONTEND=noninteractive     \
+    && apt-get update \
+    && apt-get install -y mysql-client mysql-server libpopt0 rsync \
+    && apt-get clean \
+    && unset http_proxy DEBIAN_FRONTEND \
+    && rm -rf usr/share/locale \
+    && rm -rf usr/share/man    \
+    && rm -rf usr/share/doc    \
+    && rm -rf usr/share/info   \
+    && find var/lib/apt -type f -exec rm -fv {} \; \
+    && rm -rf etc/mysql/my.cnf     \
+    && rm -rf etc/mysql/debian.cnf \
+    && ln -sv /mysql/my.cnf     /etc/mysql/my.cnf \
+    && ln -sv /mysql/debian.cnf /etc/mysql/debian.cnf \
+    && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
+
+ADD https://www.percona.com/downloads/XtraBackup/Percona-XtraBackup-2.2.11/binary/debian/wheezy/x86_64/percona-xtrabackup_2.2.11-1.wheezy_amd64.deb /percona.deb
+RUN dpkg -i /percona.deb
+
+VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
+
+ADD ./entrypoint.pl /entrypoint.pl
+
+ADD ./setup/        /mysql/
+ADD ./my.cnf55      /mysql/my.cnf
+ADD ./xtrab.sh      /mysql/xtrab.sh
+
+ENTRYPOINT ["/entrypoint.pl"]
+CMD        ["/usr/bin/mysqld_safe"]

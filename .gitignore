@@ -5,3 +5,5 @@ logs
 .config
 *.gz
 docker
+backup/
+*.deb

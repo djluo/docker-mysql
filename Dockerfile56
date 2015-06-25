@@ -29,6 +29,7 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
 VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
 
 ADD ./setup/        /mysql/
+ADD ./my.cnf56      /mysql/my.cnf
 ADD ./run.sh        /run.sh
 ADD ./functions     /functions
 ADD ./entrypoint.pl /entrypoint.pl

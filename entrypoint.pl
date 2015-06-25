@@ -31,6 +31,10 @@ foreach my $dir (@dirs) {
   }
 }
 
+system("rm", "-f", "/run/crond.pid") if ( -f "/run/crond.pid" );
+system("/usr/sbin/cron");
+system("/usr/bin/crontab", "-u", "root", "/mysql/crontab");
+
 # 切换当前运行用户,先切GID.
 #$GID = $EGID = $gid;
 #$UID = $EUID = $uid;

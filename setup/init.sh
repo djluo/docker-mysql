@@ -37,10 +37,16 @@ _wait_sock
 
 [ -S "${SOCK}" ] || _error "not found sock file?"
 
+xtrab_pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
+echo "xtrab_pw=$xtrab_pw" > /mysql/data/.xtrab
+
 /usr/bin/mysql -uroot -S ${SOCK} <<EOF
 #grant all privileges on *.* to root@"localhost";
 #grant all privileges on *.* to root@"127.0.0.1";
 #grant all privileges on *.* to root@"%"       ;
+
+grant all privileges on *.* to xtrab@"127.0.0.1" identified by "$xtrab_pw";
+grant all privileges on *.* to xtrab@"localhost" identified by "$xtrab_pw";
 
 grant shutdown on *.* to shutdown@'localhost';
 grant shutdown on *.* to shutdown@'127.0.0.1';
