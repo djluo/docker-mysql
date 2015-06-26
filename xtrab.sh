@@ -3,7 +3,7 @@
 umask 077
 
 bak_dir=$(date +"%Y")
-bak_day=$(date +"%Y%m%d-%s")
+bak_day=$(date +"%Y%m%d")
 
 temp_dir() {
   [ -d "/mysql/backup" ] || mkdir /mysql/backup

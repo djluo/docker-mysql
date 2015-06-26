@@ -39,6 +39,7 @@ _wait_sock
 
 xtrab_pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
 echo "xtrab_pw=$xtrab_pw" > /mysql/data/.xtrab
+chmod 600 /mysql/data/.xtrab
 
 /usr/bin/mysql -uroot -S ${SOCK} <<EOF
 #grant all privileges on *.* to root@"localhost";
