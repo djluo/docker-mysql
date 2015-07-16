@@ -2,6 +2,7 @@
 
 umask 077
 
+export TZ=Asia/Shanghai
 bak_dir=$(date +"%Y")
 bak_day=$(date +"%Y%m%d")
 
