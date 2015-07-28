@@ -36,6 +36,7 @@ system("/usr/sbin/cron");
 
 my $min  = int(rand(60));
 my $hour = int(rand(5));
+system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
 open (CRON,"|/usr/bin/crontab") or die "crontab error?";
 print CRON ("$min $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
 close(CRON);
