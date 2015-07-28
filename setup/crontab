@@ -1,1 +1,0 @@
-12 02 * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)
