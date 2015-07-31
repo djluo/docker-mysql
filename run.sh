@@ -29,9 +29,11 @@ app_port=${app_port:=${default_port}}
 _port
 
 _run() {
-  local mode="-d"
+  local mode="-d --restart=always"
   local name="$container_name"
   local cmd=""
+
+  [ -d "${current_dir}/backup" ] || mkdir -m 700 ${current_dir}/backup
 
   [ -f ${current_dir}/extra-my.cnf ] \
     && local volume="-v ${current_dir}/extra-my.cnf:/mysql/extra-my.cnf:ro"
