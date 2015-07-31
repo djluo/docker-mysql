@@ -4,12 +4,9 @@ umask 077
 
 export TZ=Asia/Shanghai
 bak_dir=$(date +"%Y")
-bak_day=$(date +"%Y%m%d")
+bak_day=$(date +"%Y%m%d-%H%M%S")
 
 temp_dir() {
-  [ -d "/mysql/backup" ] || mkdir /mysql/backup
-  chmod 700 /mysql/backup
-
   [ -d "/mysql/backup/temp" ] && rm -rf /mysql/backup/temp
   mkdir /mysql/backup/temp
 }
@@ -26,18 +23,31 @@ backup() {
     --defaults-file=/mysql/my.cnf   \
     --socket=/mysql/logs/mysql.sock \
     --stream=tar /mysql/backup/temp | gzip > /mysql/backup/${bak_dir}/${bak_day}.tar.gz
+
+  pushd /mysql/backup >/dev/null
+  local latest="latest-backup.tar.gz"
+  [ -L "$latest" ] && rm -f $latest
+  echo
+  ln -sv ./${bak_dir}/${bak_day}.tar.gz $latest
+  popd >/dev/null
+
+  rm -rf /mysql/backup/temp/
 }
 
 restore() {
   temp_dir
-  local backup_file="/mysql/backup/${bak_dir}/${bak_day}.tar.gz"
-  [ "x$1" != "x" ] && backup_file="$1"
+  local backup_file="$1"
+  if [ "x$backup_file" == "xlatest" ];then
+    backup_file="/mysql/backup/latest-backup.tar.gz"
+  else
+    backup_file="/mysql/backup/${backup_file:0:4}/$backup_file"
+    [ -f $backup_file ] || { echo " No backup file"; exit 127; }
+  fi
 
   tar xfi $backup_file -C  /mysql/backup/temp/
   innobackupex --apply-log /mysql/backup/temp/
 
-  [ -d "/mysql/backup/restore-bak" ] && rm -rf /mysql/backup/restore-bak
-  [ -d "/mysql/backup/restore"     ] && mv /mysql/backup/restore{,-bak}
+  [ -d "/mysql/backup/restore" ] && rm -rf /mysql/backup/restore
   mkdir -p /mysql/backup/restore/{data,log}
 
   sed 's@/mysql/@/mysql/backup/restore/@' /mysql/my.cnf \
