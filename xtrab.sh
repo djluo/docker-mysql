@@ -47,17 +47,35 @@ restore() {
                --copy-back /mysql/backup/temp/
   rm -rf /mysql/backup/temp/
 }
+
+delete(){
+  local mtime="$2"
+
+  [ -d "/mysql/backup/${bak_dir}" ] || return 1
+
+ find "/mysql/backup/${bak_dir}" \
+   -type f -mtime +${mtime:-7} -name "*.tar.gz" \
+   -exec rm -fv {} \;
+}
+
 case "$1" in
   backup)
     backup
     ;;
   restore)
-    restore
+    restore $2
+    ;;
+  delete)
+    delete $2
     ;;
   *)
     echo "In Docker Container"
-    echo "Usage: $0 [backup|restore] # backup or restore today to /mysql/backup/restore/"
-    echo "Usage: $0 restore 20150625 # restore the backup of 20150625 "
+    echo "Usage: $0 [backup|restore|delete]"
+    echo "     # backup or restore or delete to ./backup/"
+    echo "Usage: $0 restore [latest|20150625-123456.tar.gz]"
+    echo "     # restore the backup of latest or 20150625-123456 "
+    echo "Usage: $0 delete  [7|15|30]"
+    echo "     # delete  the backup of [7|15|30] day ago"
     echo
   ;;
 esac

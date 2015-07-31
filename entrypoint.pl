@@ -34,11 +34,14 @@ foreach my $dir (@dirs) {
 system("rm", "-f", "/run/crond.pid") if ( -f "/run/crond.pid" );
 system("/usr/sbin/cron");
 
-my $min  = int(rand(60));
+my $min  = $min2 = int(rand(60));
 my $hour = int(rand(5));
+$min2 = $min - 3 if $min > 3;
+
 system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
 open (CRON,"|/usr/bin/crontab") or die "crontab error?";
-print CRON ("$min $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
+print CRON ("$min2 $hour * * * (/mysql/xtrab.sh delete >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
+print CRON ("$min  $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
 close(CRON);
 
 # 切换当前运行用户,先切GID.
