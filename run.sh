@@ -19,14 +19,44 @@ images="${registry}/baoyu/mysql55"
 #default_port="172.17.42.1:3306:3306"
 
 action="$1"    # start or stop ...
-_get_uid "$2"  # uid=xxxx ,default is "1000"
-shift $flag_shift
-unset  flag_shift
+if [ "x$action" == "xexec" ];then
+  shift
+  exec_cmd=$@
+elif [ "x$action" == "xrollback" ];then
+  rollback_target="${2:-latest}"
+else
+  _get_uid "$2"  # uid=xxxx ,default is "1000"
+  shift $flag_shift
+  unset  flag_shift
 
-# 转换需映射的端口号
-app_port="$@"  # hostPort
-app_port=${app_port:=${default_port}}
-_port
+  # 转换需映射的端口号
+  app_port="$@"  # hostPort
+  app_port=${app_port:=${default_port}}
+  _port
+fi
+
+_backup() {
+  local exec_cmd="./xtrab.sh backup"
+  _exec
+}
+
+_rollback() {
+  local bak_suffix=$(date +"%s")
+  local exec_cmd="./xtrab.sh restore $rollback_target"
+  echo $exec_cmd
+  _start
+  _exec
+
+  _stop_and_remove
+
+  sudo mv -v ./log  ./log-old$bak_suffix
+  sudo mv -v ./data ./data-old$bak_suffix
+
+  sudo mv -v ./backup/restore/{data,log} .
+  sudo touch ./data/init_complete
+  sudo cp -a ./data-old$bak_suffix/.xtrab ./data/
+  _start
+}
 
 _run() {
   local mode="-d --restart=always"
