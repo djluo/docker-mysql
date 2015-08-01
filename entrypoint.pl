@@ -34,8 +34,10 @@ foreach my $dir (@dirs) {
 system("rm", "-f", "/run/crond.pid") if ( -f "/run/crond.pid" );
 system("/usr/sbin/cron");
 
-my $min  = $min2 = int(rand(60));
+my $min  = int(rand(60));
 my $hour = int(rand(5));
+
+my $min2 = $min;
 $min2 = $min - 3 if $min > 3;
 
 system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
