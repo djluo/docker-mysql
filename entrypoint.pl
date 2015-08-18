@@ -44,6 +44,15 @@ system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
 open (CRON,"|/usr/bin/crontab") or die "crontab error?";
 print CRON ("$min2 $hour * * * (/mysql/xtrab.sh delete >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
 print CRON ("$min  $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
+
+if( $ENV{'RSYNC_PASSWORD'} ){
+  my $ip   = $ENV{'backup_ip'};
+  my $dest = $ENV{'backup_dest'}."_".$ENV{'HOSTNAME'};
+  my $rsync_hour = $hour + 1;
+
+  print CRON ("$min $rsync_hour * * * (/usr/bin/rsync --bwlimit=2048 --del --port=2873 -al /rsyncd/data/ docker@". $ip ."::backup/$dest/)\n");
+}
+
 close(CRON);
 
 # 切换当前运行用户,先切GID.
