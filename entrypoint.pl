@@ -34,23 +34,23 @@ foreach my $dir (@dirs) {
 system("rm", "-f", "/run/crond.pid") if ( -f "/run/crond.pid" );
 system("/usr/sbin/cron");
 
-my $min  = int(rand(60));
+my $min1 = int(rand(60));
 my $hour = int(rand(5));
 
-my $min2 = $min;
-$min2 = $min - 3 if $min > 3;
+my $min2 = $min1;
+$min2 = $min1 - 3 if $min1 > 3;
 
 system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
 open (CRON,"|/usr/bin/crontab") or die "crontab error?";
 print CRON ("$min2 $hour * * * (/mysql/xtrab.sh delete >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
-print CRON ("$min  $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
+print CRON ("$min1 $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
 
 if( $ENV{'RSYNC_PASSWORD'} ){
   my $ip   = $ENV{'backup_ip'};
   my $dest = $ENV{'backup_dest'}."_".$ENV{'HOSTNAME'};
   my $rsync_hour = $hour + 1;
 
-  print CRON ("$min $rsync_hour * * * (/usr/bin/rsync --bwlimit=2048 --del --port=2873 -al /rsyncd/data/ docker@". $ip ."::backup/$dest/)\n");
+  print CRON ("$min1 $rsync_hour * * * (/usr/bin/rsync --bwlimit=2048 --del --port=2873 -al /mysql/backup/ docker@". $ip ."::backup/$dest/)\n");
 }
 
 close(CRON);
