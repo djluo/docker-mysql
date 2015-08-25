@@ -6,7 +6,7 @@ MAINTAINER djluo <dj.luo@baoyugame.com>
 RUN export http_proxy="http://172.17.42.1:8080/" \
     && export DEBIAN_FRONTEND=noninteractive     \
     && apt-get update \
-    && apt-get install -y mysql-client mysql-server \
+    && apt-get install -y mysql-client mysql-server libtcmalloc-minimal4 \
     && percona="http://www.percona.com/downloads/XtraBackup" \
     && percona="${percona}/Percona-XtraBackup-2.2.11/binary" \
     && percona="${percona}/debian/wheezy/x86_64" \
