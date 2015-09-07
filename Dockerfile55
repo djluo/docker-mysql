@@ -11,7 +11,7 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && percona="${percona}/Percona-XtraBackup-2.2.11/binary" \
     && percona="${percona}/debian/wheezy/x86_64" \
     && percona="${percona}/percona-xtrabackup_2.2.11-1.wheezy_amd64.deb" \
-    && curl -o /percona.deb $percona \
+    && curl -sLo /percona.deb $percona \
     && dpkg -i /percona.deb \
     && rm -rf  /percona.deb \
     && apt-get clean \
