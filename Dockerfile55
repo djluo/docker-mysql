@@ -23,17 +23,12 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && find var/lib/apt -type f -exec rm -fv {} \; \
     && rm -rf etc/mysql/my.cnf     \
     && rm -rf etc/mysql/debian.cnf \
-    && ln -sv /mysql/my.cnf     /etc/mysql/my.cnf \
-    && ln -sv /mysql/debian.cnf /etc/mysql/debian.cnf \
     && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
-
-VOLUME  ["/mysql/data", "/mysql/log", "/mysql/logs"]
 
 ADD ./entrypoint.pl /entrypoint.pl
 
-ADD ./setup/        /mysql/
-ADD ./my.cnf55      /mysql/my.cnf
-ADD ./xtrab.sh      /mysql/xtrab.sh
+ADD ./setup/        /
+ADD ./my.cnf55      /my.cnf
 
 ENTRYPOINT ["/entrypoint.pl"]
 CMD        ["/usr/bin/mysqld_safe"]

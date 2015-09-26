@@ -10,11 +10,13 @@
 # 问题: 如用shell的su命令切换,会遗留一个su本身的进程.
 # 最终: 使用perl脚本进行添加和切换操作. 从环境变量User_Id获取用户信息.
 
+use Cwd;
 use strict;
 #use English '-no_match_vars';
 
 my $uid = 1000;
 my $gid = 1000;
+my $pwd = cwd();
 
 $uid = $gid = $ENV{'User_Id'} if $ENV{'User_Id'} =~ /\d+/;
 
@@ -22,9 +24,16 @@ unless (getpwuid("$uid")){
   system("/usr/sbin/useradd", "-U", "-u $uid", "-m", "docker");
 }
 
-system("/mysql/init.sh") if ( ! -f "/mysql/data/init_complete" );
+unless( -f "/etc/mysql/my.cnf"){
+  system("cp", "/my.cnf",     "/etc/mysql/my.cnf");
+  system("cp", "/debian.cnf", "/etc/mysql/debian.cnf");
 
-my @dirs = ("/mysql/log", "/mysql/logs", "/mysql/data");
+  system("sed", "-i", "s%/MYSQL%$pwd%", "/etc/mysql/my.cnf");
+  system("sed", "-i", "s%/MYSQL%$pwd%", "/etc/mysql/debian.cnf");
+}
+system("/init.sh") if ( ! -f "./data/init_complete" );
+
+my @dirs = ("log", "logs", "data");
 foreach my $dir (@dirs) {
   if ( -d $dir && (stat($dir))[4] != $uid ){
     system("chown docker.docker -R " . $dir);
@@ -40,10 +49,10 @@ my $hour = int(rand(5));
 my $min2 = $min1;
 $min2 = $min1 - 3 if $min1 > 3;
 
-system("mkdir", "-m", "700", "/mysql/backup") unless ( -d "/mysql/backup" );
+system("mkdir", "-m", "700", "./backup") unless ( -d "./backup" );
 open (CRON,"|/usr/bin/crontab") or die "crontab error?";
-print CRON ("$min2 $hour * * * (/mysql/xtrab.sh delete >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
-print CRON ("$min1 $hour * * * (/mysql/xtrab.sh backup >/mysql/backup/stdout.log 2>/mysql/backup/stderr.log)\n");
+print CRON ("$min2 $hour * * * (cd $pwd; /xtrab.sh delete >./backup/stdout.log 2>./backup/stderr.log)\n");
+print CRON ("$min1 $hour * * * (cd $pwd; /xtrab.sh backup >./backup/stdout.log 2>./backup/stderr.log)\n");
 
 if( $ENV{'RSYNC_PASSWORD'} ){
   my $ip   = $ENV{'backup_ip'};
@@ -60,7 +69,7 @@ if( $ENV{'RSYNC_PASSWORD'} ){
   close(PW);
   umask $umask;
 
-  print CRON ("$min1 $rsync_hour * * * ($rsync_opts /mysql/backup/ docker@". $ip ."::backup/$dest/)\n");
+  print CRON ("$min1 $rsync_hour * * * ($rsync_opts $pwd/backup/ docker@". $ip ."::backup/$dest/)\n");
 }
 
 close(CRON);
@@ -73,7 +82,7 @@ $< = $> = $uid; die "switch uid error\n" if $uid != $< ;
 
 $ENV{'HOME'} = "/home/docker";
 my @cmd = @ARGV;
-my $extra_cnf = "/mysql/extra-my.cnf";
+my $extra_cnf = "$pwd/extra-my.cnf";
 splice @cmd, 1, 0, "--defaults-extra-file=$extra_cnf" if ( -f "$extra_cnf" );
 
 exec(@cmd);

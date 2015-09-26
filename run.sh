@@ -36,13 +36,13 @@ else
 fi
 
 _backup() {
-  local exec_cmd="./xtrab.sh backup"
+  local exec_cmd="/xtrab.sh backup"
   _exec
 }
 
 _rollback() {
   local bak_suffix=$(date +"%s")
-  local exec_cmd="./xtrab.sh restore $rollback_target"
+  local exec_cmd="/xtrab.sh restore $rollback_target"
   echo $exec_cmd
   _start
   _exec
@@ -74,11 +74,11 @@ _run() {
     -e "TZ=Asia/Shanghai"     \
     -e "User_Id=${User_Id}"   \
     $volume      \
-    -w "/mysql/" \
-    -v ${current_dir}/log/:/mysql/log/   \
-    -v ${current_dir}/logs/:/mysql/logs/ \
-    -v ${current_dir}/data/:/mysql/data/ \
-    -v ${current_dir}/backup/:/mysql/backup/ \
+    -w "${current_dir}" \
+    -v ${current_dir}/log/:${current_dir}/log/   \
+    -v ${current_dir}/logs/:${current_dir}/logs/ \
+    -v ${current_dir}/data/:${current_dir}/data/ \
+    -v ${current_dir}/backup/:${current_dir}/backup/ \
     --name ${name} ${images} \
     $cmd
 }

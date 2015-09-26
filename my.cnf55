@@ -1,6 +1,6 @@
 [client]
 port      = 3306
-socket    = /mysql/logs/mysql.sock
+socket    = /MYSQL/logs/mysql.sock
 default-character-set=utf8
 
 [mysql]
@@ -15,23 +15,22 @@ character-set-server = utf8
 collation-server     = utf8_general_ci
 
 port      = 3306
-socket    = /mysql/logs/mysql.sock
+socket    = /MYSQL/logs/mysql.sock
 
-datadir     = /mysql/data
-#plugin_dir = /home/mysql/plugin/
+datadir     = /MYSQL/data
 
-innodb_data_home_dir      = /mysql/data
+innodb_data_home_dir      = /MYSQL/data
 innodb_data_file_path     = ibdata1:100M:autoextend
 innodb_buffer_pool_size   = 128M
-innodb_log_group_home_dir = /mysql/log
+innodb_log_group_home_dir = /MYSQL/log
 
 # 0.01 sec
 #log-queries-not-using-indexes
 long_query_time     = 2
 slow_query_log      = 0
-slow_query_log_file = /mysql/logs/slowquery.log
-log-error           = /mysql/logs/error.log
-pid-file            = /mysql/logs/mysql.pid
+slow_query_log_file = /MYSQL/logs/slowquery.log
+log-error           = /MYSQL/logs/error.log
+pid-file            = /MYSQL/logs/pid
 
 expire_logs_days=3
 slave_compressed_protocol = 1

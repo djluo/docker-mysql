@@ -1,5 +1,8 @@
 #!/bin/bash
 
+current_dir=`readlink -f $PWD`
+cd ${current_dir} && export current_dir
+
 umask 077
 
 export TZ=Asia/Shanghai
@@ -7,63 +10,63 @@ bak_dir=$(date +"%Y")
 bak_day=$(date +"%Y%m%d-%H%M%S")
 
 temp_dir() {
-  [ -d "/mysql/backup/temp" ] && rm -rf /mysql/backup/temp
-  mkdir /mysql/backup/temp
+  [ -d "./backup/temp" ] && rm -rf ./backup/temp
+  mkdir ./backup/temp
 }
 
 backup() {
   temp_dir
-  [ -d "/mysql/backup/$bak_dir" ] || mkdir "/mysql/backup/$bak_dir"
-  source /mysql/data/.xtrab
+  [ -d "./backup/$bak_dir" ] || mkdir "./backup/$bak_dir"
+  source ./data/.xtrab
 
   /usr/bin/innobackupex \
     --slave-info \
     --user=xtrab \
     --password=$xtrab_pw \
-    --defaults-file=/mysql/my.cnf   \
-    --socket=/mysql/logs/mysql.sock \
-    --stream=tar /mysql/backup/temp | gzip > /mysql/backup/${bak_dir}/${bak_day}.tar.gz
+    --defaults-file=/etc/mysql/my.cnf   \
+    --stream=tar ./backup/temp | gzip > ./backup/${bak_dir}/${bak_day}.tar.gz
+    #--socket=/mysql/logs/mysql.sock \
 
-  pushd /mysql/backup >/dev/null
+  pushd ./backup >/dev/null
   local latest="latest-backup.tar.gz"
   [ -L "$latest" ] && rm -f $latest
   echo
   ln -sv ./${bak_dir}/${bak_day}.tar.gz $latest
   popd >/dev/null
 
-  rm -rf /mysql/backup/temp/
+  rm -rf ./backup/temp/
 }
 
 restore() {
   temp_dir
   local backup_file="$1"
   if [ "x$backup_file" == "xlatest" ];then
-    backup_file="/mysql/backup/latest-backup.tar.gz"
+    backup_file="./backup/latest-backup.tar.gz"
   else
-    backup_file="/mysql/backup/${backup_file:0:4}/$backup_file"
+    backup_file="./backup/${backup_file:0:4}/$backup_file"
     [ -f $backup_file ] || { echo " No backup file"; exit 127; }
   fi
 
-  tar xfi $backup_file -C  /mysql/backup/temp/
-  innobackupex --apply-log /mysql/backup/temp/
+  tar xfi $backup_file -C  ./backup/temp/
+  innobackupex --apply-log ./backup/temp/
 
-  [ -d "/mysql/backup/restore" ] && rm -rf /mysql/backup/restore
-  mkdir -p /mysql/backup/restore/{data,log}
+  [ -d "./backup/restore" ] && rm -rf ./backup/restore
+  mkdir -p ./backup/restore/{data,log}
 
-  sed 's@/mysql/@/mysql/backup/restore/@' /mysql/my.cnf \
-    > /mysql/backup/restore/restore-my.cnf
+  sed "s@/MYSQL/@${current_dir}/backup/restore/@" /my.cnf \
+    > ./backup/restore/restore-my.cnf
 
-  innobackupex --defaults-file="/mysql/backup/restore/restore-my.cnf" \
-               --copy-back /mysql/backup/temp/
-  rm -rf /mysql/backup/temp/
+  innobackupex --defaults-file="./backup/restore/restore-my.cnf" \
+               --copy-back ./backup/temp/
+  rm -rf ./backup/temp/
 }
 
 delete(){
   local mtime="$2"
 
-  [ -d "/mysql/backup/${bak_dir}" ] || return 1
+  [ -d "./backup/${bak_dir}" ] || return 1
 
- find "/mysql/backup/${bak_dir}" \
+ find "./backup/${bak_dir}" \
    -type f -mtime +${mtime:-7} -name "*.tar.gz" \
    -exec rm -fv {} \;
 }

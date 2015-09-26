@@ -2,8 +2,11 @@
 #set -x
 #echo -n "mysql init: "
 
+current_dir=`readlink -f $PWD`
+cd ${current_dir} && export current_dir
+
 HOST=`hostname`
-SOCK="/mysql/logs/mysql-init.sock"
+SOCK="./logs/mysql-init.sock"
 
 retvar=1
 
@@ -24,11 +27,9 @@ _wait_sock() {
 }
 
 /usr/bin/mysql_install_db \
-  --datadir=/mysql/data >/dev/null || _error "mysql_install_db error?"
+  --datadir=./data >/dev/null || _error "mysql_install_db error?"
 
-chown -R mysql.mysql /mysql/log  \
-                     /mysql/logs \
-                     /mysql/data
+chown -R mysql.mysql ./log ./logs ./data
 
 /usr/bin/mysqld_safe --socket=${SOCK} >/dev/null &
 [ $? -eq 0 ] || _error "start mysql error?"
@@ -38,16 +39,20 @@ _wait_sock
 [ -S "${SOCK}" ] || _error "not found sock file?"
 
 xtrab_pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
-echo "xtrab_pw=$xtrab_pw" > /mysql/data/.xtrab
-chmod 600 /mysql/data/.xtrab
+echo "xtrab_pw=$xtrab_pw" > ./data/.xtrab
+chmod 600 ./data/.xtrab
+
+/usr/bin/mysql -uroot -S ${SOCK:-"./logs/mysql.sock -p"} <<EOF
+grant all privileges on *.* to xtrab@"127.0.0.1" identified by "$xtrab_pw";
+grant all privileges on *.* to xtrab@"localhost" identified by "$xtrab_pw";
+EOF
+[ $? -eq 0 ] || _error "change privileges error?"
+unset xtrab_pw
 
 /usr/bin/mysql -uroot -S ${SOCK} <<EOF
 #grant all privileges on *.* to root@"localhost";
 #grant all privileges on *.* to root@"127.0.0.1";
 #grant all privileges on *.* to root@"%"       ;
-
-grant all privileges on *.* to xtrab@"127.0.0.1" identified by "$xtrab_pw";
-grant all privileges on *.* to xtrab@"localhost" identified by "$xtrab_pw";
 
 grant shutdown on *.* to shutdown@'localhost';
 grant shutdown on *.* to shutdown@'127.0.0.1';
@@ -65,10 +70,10 @@ EOF
 /usr/bin/mysqladmin -S ${SOCK} -ushutdown shutdown >/dev/null
 [ -S "${SOCK}" ] && _error "stop mysql error?"
 
-chmod 644 /mysql/logs/error.log /mysql/logs/slowquery.log
-chmod 750 /mysql/log /mysql/data
+chmod 644 ./logs/error.log ./logs/slowquery.log
+chmod 750 ./log ./data
 
-echo "not delele me!!!" > /mysql/data/init_complete
+echo "not delele me!!!" > ./data/init_complete
 
 echo "======================================================"
 echo "The initial password for the mysql(root): no password,is empty"
