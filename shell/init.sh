@@ -3,10 +3,10 @@
 #echo -n "mysql init: "
 
 current_dir=`readlink -f $PWD`
-cd ${current_dir} && export current_dir
+pushd ${current_dir} && export current_dir
 
 HOST=`hostname`
-SOCK="./logs/mysql-init.sock"
+SOCK="${current_dir}/logs/mysql-init.sock"
 
 retvar=1
 
@@ -27,7 +27,7 @@ _wait_sock() {
 }
 
 /usr/bin/mysql_install_db \
-  --datadir=./data >/dev/null || _error "mysql_install_db error?"
+  --datadir=${current_dir}/data >/dev/null || _error "mysql_install_db error?"
 
 chown -R mysql.mysql ./log ./logs ./data
 

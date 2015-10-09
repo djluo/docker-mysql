@@ -25,10 +25,11 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && rm -rf etc/mysql/debian.cnf \
     && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
 
-ADD ./entrypoint.pl /entrypoint.pl
-
-ADD ./setup/        /
-ADD ./my.cnf55      /my.cnf
+COPY ./entrypoint.pl   /entrypoint.pl
+COPY ./conf/debian.cnf /debian.cnf
+COPY ./conf/my.cnf55   /my.cnf
+COPY ./shell/init.sh   /init.sh
+COPY ./shell/xtrab.sh  /xtrab.sh
 
 ENTRYPOINT ["/entrypoint.pl"]
 CMD        ["/usr/bin/mysqld_safe"]

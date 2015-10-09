@@ -63,10 +63,11 @@ _run() {
   local name="$container_name"
   local cmd=""
 
-  [ -d "${current_dir}/backup" ] || mkdir -m 700 ${current_dir}/backup
+  [ -d "${current_dir}/backup" ] || sudo mkdir -m 700 ${current_dir}/backup
 
-  [ -f ${current_dir}/extra-my.cnf ] \
-    && local volume="-v ${current_dir}/extra-my.cnf:/mysql/extra-my.cnf:ro"
+  local extra="${current_dir}/extra-my.cnf"
+  [ -f ${extra} ] \
+    && local volume="-v ${extra}:${extra}:ro"
 
   [ "x$1" == "xdebug" ] && _run_debug
 
@@ -75,6 +76,9 @@ _run() {
     -e "User_Id=${User_Id}"   \
     $volume      \
     -w "${current_dir}" \
+    -e "backup_dest=$name"     \
+    -e "RSYNC_PASSWORD=docker" \
+    -e "backup_ip=172.17.42.1" \
     -v ${current_dir}/log/:${current_dir}/log/   \
     -v ${current_dir}/logs/:${current_dir}/logs/ \
     -v ${current_dir}/data/:${current_dir}/data/ \
