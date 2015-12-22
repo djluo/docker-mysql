@@ -1,0 +1,6 @@
+[mysqld]
+read_only=1
+server-id=93
+relay_log_purge=0
+skip-slave-start=0
+replicate-wild-ignore-table=mysql.%
