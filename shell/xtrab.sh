@@ -33,27 +33,34 @@ backup() {
 }
 
 restore() {
+  supervisorctl stop mysqld
+
   temp_dir
   local backup_file="$1"
   if [ "x$backup_file" == "xlatest" ];then
     backup_file="./backup/latest-backup.tar.gz"
   else
-    backup_file="./backup/${backup_file:0:4}/$backup_file"
+    backup_file="./backup/$backup_file"
     [ -f $backup_file ] || { echo " No backup file"; exit 127; }
   fi
 
   tar xfi $backup_file -C  ./backup/temp/
   innobackupex --apply-log ./backup/temp/
 
-  [ -d "./backup/restore" ] && rm -rf ./backup/restore
-  mkdir -p ./backup/restore/{data,log}
+  # 移动现有data 和log 下的文件至备份目录
+  mkdir -v ./backup/data-${bak_day} ./backup/log-${bak_day}
+  mv ./data/*      ./backup/data-${bak_day}
+  mv ./data/.xtrab ./backup/data-${bak_day}
+  mv ./log/*  ./backup/data-${bak_day}
 
-  sed "s@/MYSQL/@${current_dir}/backup/restore/@" /my.cnf \
-    > ./backup/restore/restore-my.cnf
-
-  innobackupex --defaults-file="./backup/restore/restore-my.cnf" \
+  innobackupex --defaults-file="/etc/mysql/my.cnf" \
                --copy-back ./backup/temp/
+
   rm -rf ./backup/temp/
+
+  chown docker.docker -R ./data ./log
+  cp -av ./backup/data-${bak_day}/.xtrab ./data/
+  supervisorctl start mysqld
 }
 
 delete(){
