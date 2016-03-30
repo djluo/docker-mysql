@@ -50,10 +50,6 @@ EOF
 unset xtrab_pw
 
 /usr/bin/mysql -uroot -S ${SOCK} <<EOF
-#grant all privileges on *.* to root@"localhost";
-#grant all privileges on *.* to root@"127.0.0.1";
-#grant all privileges on *.* to root@"%"       ;
-
 grant shutdown on *.* to shutdown@'localhost';
 grant shutdown on *.* to shutdown@'127.0.0.1';
 
@@ -61,11 +57,27 @@ drop user root@'::1';
 drop user root@"${HOST}";
 delete from mysql.user where user='';
 
-#drop database test;
+drop database if exists test;
 
 flush privileges;
 EOF
 [ $? -eq 0 ] || _error "change privileges error?"
+
+show_password="no password,is empty"
+if [ "x$password" != "x" ] ;then
+
+/usr/bin/mysql -uroot -S ${SOCK} <<EOF
+grant all privileges on *.* to root@"localhost" identified by "$password";
+grant all privileges on *.* to root@"127.0.0.1" identified by "$password";
+grant all privileges on *.* to root@"%"         identified by "$password";
+flush privileges;
+EOF
+  if [ $? -eq 0 ] ;then
+    show_password="see environment variables"
+  else
+    _error "change privileges error?"
+  fi
+fi
 
 /usr/bin/mysqladmin -S ${SOCK} -ushutdown shutdown >/dev/null
 [ -S "${SOCK}" ] && _error "stop mysql error?"
@@ -77,5 +89,5 @@ chmod 750 ./log ./data
 echo "not delele me!!!" > ./data/init_complete
 
 echo "======================================================"
-echo "The initial password for the mysql(root): no password,is empty"
+echo "The initial password for the mysql(root): $show_password"
 echo "======================================================"
