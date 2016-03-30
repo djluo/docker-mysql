@@ -31,7 +31,7 @@ _wait_sock() {
 
 chown -R mysql.mysql ./log ./logs ./data
 
-/usr/bin/mysqld_safe --socket=${SOCK} >/dev/null &
+/usr/bin/mysqld_safe --skip-networking --socket=${SOCK} >/dev/null &
 [ $? -eq 0 ] || _error "start mysql error?"
 
 _wait_sock
