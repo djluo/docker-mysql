@@ -29,7 +29,7 @@ innodb_log_group_home_dir = /MYSQL/log
 # 0.01 sec
 #log-queries-not-using-indexes
 long_query_time     = 2
-slow_query_log      = 0
+slow_query_log      = 1
 slow_query_log_file = /MYSQL/logs/slowquery.log
 log-error           = /MYSQL/logs/error.log
 pid-file            = /MYSQL/logs/pid
