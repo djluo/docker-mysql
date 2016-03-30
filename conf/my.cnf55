@@ -18,6 +18,8 @@ port      = 3306
 socket    = /MYSQL/logs/mysql.sock
 
 datadir     = /MYSQL/data
+basedir     = /usr
+plugin_dir  = /usr/lib/mysql/plugin
 
 innodb_data_home_dir      = /MYSQL/data
 innodb_data_file_path     = ibdata1:100M:autoextend
