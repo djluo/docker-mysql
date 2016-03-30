@@ -22,7 +22,9 @@ except KeyError:
 
 # 初始化数据库配置文件
 working_dir = os.getcwd()
+extra_file  = working_dir + "/extra-my.cnf"
 super_conf  = "/etc/supervisor/supervisord.conf"
+slave_conf  = "/etc/mysql/slave-extra-my.cnf"
 
 # 调整配置文件的路径
 if not os.path.isfile("/etc/mysql/modify_complete"):
@@ -36,8 +38,12 @@ pool_size = os.getenv("innodb_buffer_pool_size")
 if pool_size:
   os.system("sed -i '/innodb/s@128M@%s@' %s" % ( pool_size, super_conf ) )
 
+# 从库模式
+if os.getenv("IS_SLAVE"):
+  if not os.path.isfile(extra_file):
+    os.system("cp -fv %s %s" % ( slave_conf, extra_file) )
+
 # 扩展配置文件
-extra_file = working_dir + "/extra-my.cnf"
 if os.path.isfile(extra_file):
   extra_file="--defaults-extra-file=" + extra_file
   os.system("sed -i 's@mysqld --innodb@mysqld %s --innodb@' %s" % ( extra_file, super_conf ) )
@@ -51,6 +57,11 @@ for dirs in mysql_dirs:
 # 初始化库
 if not os.path.isfile("./data/init_complete"):
   os.system("/init.sh")
+
+# 从库模式
+if os.getenv("IS_SLAVE"):
+  if not os.path.isfile("./data/slave_complete"):
+    os.system("/slave.sh")
 
 # 目录权限
 for dirs in mysql_dirs:

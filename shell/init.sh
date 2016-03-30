@@ -42,9 +42,17 @@ xtrab_pw=$(pwgen 16 1)
 echo "xtrab_pw=$xtrab_pw" > ./data/.xtrab
 chmod 600 ./data/.xtrab
 
+if [ "x$slave_pw" == "x" ] ; then
+  slave_pw=$(pwgen 16 1)
+  show_slave_pw=$slave_pw
+else
+  show_slave_pw="see environment variables"
+fi
+
 /usr/bin/mysql -uroot -S ${SOCK:-"./logs/mysql.sock -p"} <<EOF
-grant all privileges on *.* to xtrab@"127.0.0.1" identified by "$xtrab_pw";
-grant all privileges on *.* to xtrab@"localhost" identified by "$xtrab_pw";
+grant all privileges on *.*    to xtrab@"127.0.0.1" identified by "$xtrab_pw";
+grant all privileges on *.*    to xtrab@"localhost" identified by "$xtrab_pw";
+grant replication slave on *.* to slave@'%'         identified by "$slave_pw";
 EOF
 [ $? -eq 0 ] || _error "change privileges error?"
 unset xtrab_pw
@@ -89,5 +97,6 @@ chmod 750 ./log ./data
 echo "not delele me!!!" > ./data/init_complete
 
 echo "======================================================"
-echo "The initial password for the mysql(root): $show_password"
+echo "The initial password for the mysql(root) : $show_password"
+echo "The initial password for the mysql(slave): $show_slave_pw"
 echo "======================================================"
