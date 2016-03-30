@@ -1,19 +1,21 @@
 # vim:set et ts=2 sw=2 syntax=dockerfile:
 
-FROM       docker.xlands-inc.com/baoyu/debian
+FROM       docker.xlands-inc.com/baoyu/debian:py2
 MAINTAINER djluo <dj.luo@baoyugame.com>
+
+ENV PERCONA   https://repo.percona.com/apt/percona-release_0.1-3.jessie_all.deb
 
 RUN export http_proxy="http://172.17.42.1:8080/" \
     && export DEBIAN_FRONTEND=noninteractive     \
     && apt-get update \
+    && apt-get install -y curl pwgen \
+    && AUTO_ADDED_DEB=$(apt-mark showauto) \
+    && curl -sLo /percona.deb $PERCONA \
+    && dpkg -i   /percona.deb \
+    && rm -rf    /percona.deb \
+    && apt-get purge   -y ${AUTO_ADDED_DEB} \
     && apt-get install -y mysql-client mysql-server libtcmalloc-minimal4 \
-    && percona="http://www.percona.com/downloads/XtraBackup" \
-    && percona="${percona}/Percona-XtraBackup-2.2.11/binary" \
-    && percona="${percona}/debian/wheezy/x86_64" \
-    && percona="${percona}/percona-xtrabackup_2.2.11-1.wheezy_amd64.deb" \
-    && curl -sLo /percona.deb $percona \
-    && dpkg -i /percona.deb \
-    && rm -rf  /percona.deb \
+    && apt-get update && apt-get install -y percona-xtrabackup-24 libev4 \
     && apt-get clean \
     && unset http_proxy DEBIAN_FRONTEND percona \
     && rm -rf usr/share/locale \
@@ -23,13 +25,14 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && find var/lib/apt -type f -exec rm -fv {} \; \
     && rm -rf etc/mysql/my.cnf     \
     && rm -rf etc/mysql/debian.cnf \
+    && rm -rf var/lib/mysql        \
     && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
 
-COPY ./entrypoint.pl   /entrypoint.pl
-COPY ./conf/debian.cnf /debian.cnf
-COPY ./conf/my.cnf55   /my.cnf
-COPY ./shell/init.sh   /init.sh
-COPY ./shell/xtrab.sh  /xtrab.sh
+COPY ./init.py          /init.py
+COPY ./conf/debian.cnf  /etc/mysql/debian.cnf
+COPY ./conf/my.cnf55    /etc/mysql/my.cnf
+COPY ./shell/init.sh    /init.sh
+COPY ./shell/xtrab.sh   /xtrab.sh
+COPY ./supervisord.conf /etc/supervisor/supervisord.conf
 
-ENTRYPOINT ["/entrypoint.pl"]
-CMD        ["/usr/bin/mysqld_safe"]
+CMD  ["/init.py"]

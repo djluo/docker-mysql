@@ -38,7 +38,7 @@ _wait_sock
 
 [ -S "${SOCK}" ] || _error "not found sock file?"
 
-xtrab_pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
+xtrab_pw=$(pwgen 16 1)
 echo "xtrab_pw=$xtrab_pw" > ./data/.xtrab
 chmod 600 ./data/.xtrab
 
@@ -70,8 +70,9 @@ EOF
 /usr/bin/mysqladmin -S ${SOCK} -ushutdown shutdown >/dev/null
 [ -S "${SOCK}" ] && _error "stop mysql error?"
 
-chmod 644 ./logs/error.log ./logs/slowquery.log
+chmod 644 ./logs/error.log
 chmod 750 ./log ./data
+[ -f ./logs/slowquery.log ] && chmod 644 ./logs/slowquery.log
 
 echo "not delele me!!!" > ./data/init_complete
 

@@ -20,10 +20,8 @@ backup() {
   source ./data/.xtrab
 
   /usr/bin/innobackupex \
-    --slave-info \
-    --user=xtrab \
-    --password=$xtrab_pw \
     --defaults-file=/etc/mysql/my.cnf   \
+    --slave-info --user=xtrab --password=$xtrab_pw \
     --stream=tar ./backup/temp | gzip > ./backup/${bak_dir}/${bak_day}.tar.gz
     #--socket=/mysql/logs/mysql.sock \
 
