@@ -85,7 +85,7 @@ if backup_ip:
   cron.write("%02d %d * * * %s\n" % (minute, hour + 1, rsync_cmd) )
   cron.close()
 
-os.system("crontab -u docker ./crontab")
+os.system("crontab -u root ./crontab")
 
 # 切换运行账号
 os.setgid(uid)
