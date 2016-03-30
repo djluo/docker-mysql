@@ -33,6 +33,11 @@ COPY ./conf/debian.cnf  /etc/mysql/debian.cnf
 COPY ./conf/my.cnf55    /etc/mysql/my.cnf
 COPY ./shell/init.sh    /init.sh
 COPY ./shell/xtrab.sh   /xtrab.sh
+
+RUN ln -sv /xtrab.sh /bin/list   \
+ && ln -sv /xtrab.sh /bin/backup \
+ && ln -sv /xtrab.sh /bin/restore
+
 COPY ./supervisord.conf /etc/supervisor/supervisord.conf
 
 CMD  ["/init.py"]
