@@ -29,17 +29,14 @@ RUN export http_proxy="http://172.17.42.1:8080/" \
     && sed -i '146s/\&1/& \& wait/' /usr/bin/mysqld_safe
 
 COPY ./init.py          /init.py
-COPY ./conf/debian.cnf  /etc/mysql/debian.cnf
+COPY ./conf/            /etc/mysql/
 COPY ./conf/my.cnf55    /etc/mysql/my.cnf
-COPY ./shell/init.sh    /init.sh
-COPY ./shell/xtrab.sh   /xtrab.sh
-COPY ./shell/slave.sh   /slave.sh
+COPY ./shell/           /
 
 RUN ln -sv /xtrab.sh /bin/list   \
  && ln -sv /xtrab.sh /bin/backup \
  && ln -sv /xtrab.sh /bin/restore
 
 COPY ./supervisord.conf /etc/supervisor/supervisord.conf
-COPY ./conf/slave-extra-my.cnf /etc/mysql/
 
 CMD  ["/init.py"]
