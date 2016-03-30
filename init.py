@@ -62,9 +62,6 @@ for dirs in mysql_dirs:
     os.chmod(dirs, 0700)
 
 # crontab相关操作
-if os.path.isfile("/run/crond.pid"):
-  os.unlink("/run/crond.pid")
-
 minute = random.randint(0, 50)
 hour   = random.randint(1,  6)
 
@@ -99,6 +96,11 @@ if backup_ip:
   cron.close()
 
 os.system("crontab -u root ./crontab")
+
+# 开启crond 进程
+if os.path.isfile("/run/crond.pid"):
+  os.unlink("/run/crond.pid")
+os.system("/usr/sbin/cron")
 
 # 切换运行账号
 os.setgid(uid)
