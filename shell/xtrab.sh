@@ -120,8 +120,10 @@ _list() {
 prog=$(basename $0)
 if echo "$prog" | egrep -q "^(backup|restore|list)$" ;then
   action="$prog"
+  args="$1"
 else
   action="$1"
+  args="$2"
 fi
 
 case "$action" in
@@ -129,7 +131,7 @@ case "$action" in
     backup
   ;;
   restore)
-    restore $2
+    restore $args
   ;;
   delete)
     delete $2
