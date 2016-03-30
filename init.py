@@ -22,12 +22,19 @@ except KeyError:
 
 # 初始化数据库配置文件
 working_dir = os.getcwd()
+super_conf  = "/etc/supervisor/supervisord.conf"
 
+# 调整配置文件的路径
 if not os.path.isfile("/etc/mysql/modify_complete"):
   os.system("sed -i 's@/MYSQL@%s@' /etc/mysql/my.cnf"     % working_dir)
   os.system("sed -i 's@/MYSQL@%s@' /etc/mysql/debian.cnf" % working_dir)
-  os.system("sed -i 's@/path/to/dir@%s@' /etc/supervisor/supervisord.conf" % working_dir)
+  os.system("sed -i 's@/path/to/dir@%s@' %s" % ( working_dir, super_conf ) )
   os.system("touch /etc/mysql/modify_complete")
+
+# 默认内存池为128M
+pool_size = os.getenv("innodb_buffer_pool_size")
+if pool_size:
+  os.system("sed -i '/innodb/s@128M@%s@' %s" % ( pool_size, super_conf ) )
 
 # 确保目录存在
 mysql_dirs = [ "./logs", "./log", "./data", "./backup" ]
