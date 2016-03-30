@@ -36,6 +36,12 @@ pool_size = os.getenv("innodb_buffer_pool_size")
 if pool_size:
   os.system("sed -i '/innodb/s@128M@%s@' %s" % ( pool_size, super_conf ) )
 
+# 扩展配置文件
+extra_file = working_dir + "/extra-my.cnf"
+if os.path.isfile(extra_file):
+  extra_file="--defaults-extra-file=" + extra_file
+  os.system("sed -i 's@mysqld --innodb@mysqld %s --innodb@' %s" % ( extra_file, super_conf ) )
+
 # 确保目录存在
 mysql_dirs = [ "./logs", "./log", "./data", "./backup" ]
 for dirs in mysql_dirs:
