@@ -6,7 +6,6 @@ cd ${current_dir} && export current_dir
 umask 077
 
 export TZ=Asia/Shanghai
-bak_dir=$(date +"%Y")
 bak_day=$(date +"%Y%m%d-%H%M%S")
 
 temp_dir() {
@@ -16,20 +15,19 @@ temp_dir() {
 
 backup() {
   temp_dir
-  [ -d "./backup/$bak_dir" ] || mkdir "./backup/$bak_dir"
   source ./data/.xtrab
 
   /usr/bin/innobackupex \
     --defaults-file=/etc/mysql/my.cnf   \
     --slave-info --user=xtrab --password=$xtrab_pw \
-    --stream=tar ./backup/temp | gzip > ./backup/${bak_dir}/${bak_day}.tar.gz
+    --stream=tar ./backup/temp | gzip > ./backup/${bak_day}.tar.gz
     #--socket=/mysql/logs/mysql.sock \
 
   pushd ./backup >/dev/null
   local latest="latest-backup.tar.gz"
   [ -L "$latest" ] && rm -f $latest
   echo
-  ln -sv ./${bak_dir}/${bak_day}.tar.gz $latest
+  ln -sv ./${bak_day}.tar.gz $latest
   popd >/dev/null
 
   rm -rf ./backup/temp/
@@ -62,9 +60,7 @@ restore() {
 delete(){
   local mtime="$2"
 
-  [ -d "./backup/${bak_dir}" ] || return 1
-
- find "./backup/${bak_dir}" \
+  find "./backup/" \
    -type f -mtime +${mtime:-7} -name "*.tar.gz" \
    -exec rm -fv {} \;
 }
