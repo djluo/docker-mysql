@@ -32,8 +32,20 @@ backup() {
   rm -rf ./backup/temp/
 }
 
+_wait_sock() {
+  local i=1
+  while [ $i -lt 300 ]
+  do
+    [ -S "./logs/mysql.sock" ] && break
+    sleep 1
+    let i+=1
+  done
+}
 restore() {
   supervisorctl stop mysqld
+
+  [ -S "./logs/mysql.sock" ] && sleep 2
+  [ -S "./logs/mysql.sock" ] && { echo "stop mysqld error?"; exit 127; }
 
   temp_dir
   local backup_file="$1"
@@ -51,7 +63,7 @@ restore() {
   mkdir -v ./backup/data-${bak_day} ./backup/log-${bak_day}
   mv ./data/*      ./backup/data-${bak_day}
   mv ./data/.xtrab ./backup/data-${bak_day}
-  mv ./log/*  ./backup/data-${bak_day}
+  mv ./log/*       ./backup/log-${bak_day}
 
   innobackupex --defaults-file="/etc/mysql/my.cnf" \
                --copy-back ./backup/temp/
@@ -59,8 +71,15 @@ restore() {
   rm -rf ./backup/temp/
 
   chown docker.docker -R ./data ./log
-  cp -av ./backup/data-${bak_day}/.xtrab ./data/
+
+  # 将标志位重新复制回来
+  cp -av ./backup/data-${bak_day}/.xtrab        ./data/
+  cp -av ./backup/data-${bak_day}/init_complete ./data/
+
   supervisorctl start mysqld
+  _wait_sock
+  [ -S "./logs/mysql.sock" ] || { echo "start mysqld error?"; exit 127; }
+
 }
 
 delete(){
@@ -83,12 +102,14 @@ case "$1" in
     ;;
   *)
     echo "In Docker Container"
-    echo "Usage: $0 [backup|restore|delete]"
-    echo "     # backup or restore or delete to ./backup/"
+    echo "Usage: $0 backup"
+    echo "     : backup  to ./backup/%Y%m%d-%H%M%S.tar.gz"
+    echo
     echo "Usage: $0 restore [latest|20150625-123456.tar.gz]"
-    echo "     # restore the backup of latest or 20150625-123456 "
+    echo "     : restore the backup of latest or 20150625-123456 "
+    echo
     echo "Usage: $0 delete  [7|15|30]"
-    echo "     # delete  the backup of [7|15|30] day ago"
+    echo "     : delete  the backup of [7|15|30] day ago"
     echo
   ;;
 esac
