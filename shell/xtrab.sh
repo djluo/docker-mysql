@@ -21,13 +21,12 @@ backup() {
     --defaults-file=/etc/mysql/my.cnf   \
     --slave-info --user=xtrab --password=$xtrab_pw \
     --stream=tar ./backup/temp | gzip > ./backup/${bak_day}.tar.gz
-    #--socket=/mysql/logs/mysql.sock \
 
   pushd ./backup >/dev/null
   local latest="latest-backup.tar.gz"
   [ -L "$latest" ] && rm -f $latest
   echo
-  ln -sv ./${bak_day}.tar.gz $latest
+  ln -sv ${current_dir}/backup/${bak_day}.tar.gz $latest
   popd >/dev/null
 
   rm -rf ./backup/temp/
