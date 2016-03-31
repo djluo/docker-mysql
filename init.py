@@ -106,6 +106,7 @@ del_cmd='(cd %s; /xtrab.sh delete >> ./backup/stdout.log 2>&1)' % working_dir
 bak_cmd='(cd %s; /xtrab.sh backup >> ./backup/stdout.log 2>&1)' % working_dir
 
 cron = open("./crontab", "w")
+cron.write("# Run in the container\n")
 cron.write("%02d %d * * * %s\n" % (minute,     hour, del_cmd) )
 cron.write("%02d %d * * * %s\n" % (minute + 5, hour, bak_cmd) )
 cron.close()
