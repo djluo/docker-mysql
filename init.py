@@ -40,8 +40,33 @@ if pool_size:
 
 # 从库模式
 if os.getenv("IS_SLAVE"):
+  # 从库与主库差异配置文件, 主从库能能直连模式
   if not os.path.isfile(extra_file):
     os.system("cp -fv %s %s" % ( slave_conf, extra_file) )
+  # ssh隧道模式
+  if os.getenv("IS_TUNNEL") and os.getenv("WITH_SSH"):
+    # 生产互信对密钥对
+    key_path = working_dir + "/.ssh"
+    if not os.path.isdir(key_path):
+      os.mkdir(key_path, 0755)
+      os.system('ssh-keygen -b 2048 -t rsa -f %s/id_rsa -q -N "" -C Container' % key_path )
+      os.system('chown -R docker.docker %s' % key_path)
+
+    # supervisor 子配置文件
+    ssh_ip    = os.getenv('ssh_ip')
+    ssh_port  = os.getenv('ssh_port',   '932'      )
+    ssh_user  = os.getenv('ssh_user',   'tunnel'   )
+    mysql_ip  = os.getenv('mysql_ip',   '127.0.0.1')
+    mysql_port= os.getenv('mysql_port', '3306'     )
+
+    ssh_cmd  = "/usr/bin/ssh -i %s/id_rsa -p%s -oStrictHostKeyChecking=no -N " % ( key_path, ssh_port )
+    ssh_cmd += "-L127.0.0.1:3306:%s:%s %s@%s" % ( mysql_ip, mysql_port, ssh_user, ssh_ip )
+
+    tunnel = open("/etc/supervisor/conf.d/tunnel.conf", "w")
+    tunnel.write("[program:tunnel]\n")
+    tunnel.write("autorestart=true\n")
+    tunnel.write("command=%s\n" % ssh_cmd )
+    tunnel.close()
 
 # 扩展配置文件
 if os.path.isfile(extra_file):

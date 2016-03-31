@@ -3,6 +3,11 @@ set -x
 
 [ "x$password" != "x" ] && pw="-p$password"
 
+if [ "x$IS_TUNNEL" != "x" -a "x$WITH_SSH" != "x" ];then
+  MASTER_HOST="127.0.0.1"
+  MASTER_PORT="3306"
+fi
+
 /usr/bin/mysql -uroot $pw <<EOF
 slave stop;
 
