@@ -1,0 +1,32 @@
+master:
+  image: docker.xlands-inc.com/baoyu/mysql55:v20
+  volumes:
+    - /home/xlands/mysql-master/:/home/xlands/mysql-master/
+  environment:
+    - User_Id=1000
+    - innodb_buffer_pool_size=384M
+    - password=master_mysql_root_pw
+    - slave_pw=mysql_slave_pw
+    - RSYNC_PASSWORD=rsyncd_pw
+    - backup_ip=172.17.42.1
+    - backup_dest=name_is_master
+  working_dir: /home/xlands/mysql-master
+  ports:
+    - "0.0.0.0:3306:3306"
+slave_direct:
+  image: docker.xlands-inc.com/baoyu/mysql55:v20
+  volumes:
+    - /home/xlands/mysql-slave-direct/:/home/xlands/mysql-slave-direct
+  environment:
+    - User_Id=1000
+    - innodb_buffer_pool_size=64M
+    - password=slave_mysql_root_pw
+    - IS_SLAVE=yes
+    - MASTER_HOST=172.17.42.1
+    - MASTER_PORT=3306
+    - MASTER_PASSWORD=master_mysql_slave_pw
+    - MASTER_LOG_FILE=mysql-bin.000001
+    - MASTER_LOG_POS=107
+  working_dir: /home/xlands/mysql-slave-direct
+  ports:
+    - "0.0.0.0:3307:3306"
