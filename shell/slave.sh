@@ -8,7 +8,7 @@ if [ "x$IS_TUNNEL" != "x" -a "x$WITH_SSH" != "x" ];then
   MASTER_PORT="3306"
 fi
 
-/usr/bin/mysql -uroot $pw <<EOF
+/usr/bin/mysql -S ${SOCK} -uroot $pw <<EOF
 slave stop;
 
 CHANGE MASTER TO

@@ -83,11 +83,6 @@ for dirs in mysql_dirs:
 if not os.path.isfile("./data/init_complete"):
   os.system("/init.sh")
 
-# 从库模式
-if os.getenv("IS_SLAVE"):
-  if not os.path.isfile("./data/slave_complete"):
-    os.system("/slave.sh")
-
 # 目录权限
 for dirs in mysql_dirs:
   if not dirs == "./backup":

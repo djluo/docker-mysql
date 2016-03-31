@@ -7,6 +7,7 @@ pushd ${current_dir} && export current_dir
 
 HOST=`hostname`
 SOCK="${current_dir}/logs/mysql-init.sock"
+export SOCK
 
 retvar=1
 
@@ -85,6 +86,11 @@ EOF
   else
     _error "change privileges error?"
   fi
+fi
+
+# 从库模式
+if [ "x$IS_SLAVE" != "x" ];then
+  [ -f "./data/slave_complete" ] || /slave.sh
 fi
 
 /usr/bin/mysqladmin -S ${SOCK} -ushutdown shutdown >/dev/null
