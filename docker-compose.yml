@@ -1,5 +1,5 @@
 master:
-  image: docker.xlands-inc.com/baoyu/mysqld:v55.03
+  image: docker.xlands-inc.com/baoyu/mysqld:v55.04
   volumes:
     - /home/xlands/mysql-master/:/home/xlands/mysql-master/
   environment:
