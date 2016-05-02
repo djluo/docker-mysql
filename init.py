@@ -72,8 +72,8 @@ if os.getenv("IS_SLAVE"):
 ## 默认binlog 过期时间为3天
 expire_logs_days = os.getenv("expire_logs_days")
 if expire_logs_days:
-  flag = 0
   if os.path.isfile(extra_file):
+    flag = 0
     extra = open(extra_file, "a+")
     for line in extra.readlines():
       if re.match(r'^expire_logs_days=\d+$', line):
@@ -85,7 +85,12 @@ if expire_logs_days:
     extra.close()
     if flag == 1:
       os.system("sed -i '/expire_logs_days/s@=.*@=%s@' %s" % ( expire_logs_days, extra_file ) )
-  del flag
+    del flag
+  else:
+    extra = open(extra_file, "w")
+    extra.write('[mysqld]\n')
+    extra.write('expire_logs_days=%s\n' % expire_logs_days )
+    extra.close()
 
 # 启用扩展配置文件
 if os.path.isfile(extra_file):
