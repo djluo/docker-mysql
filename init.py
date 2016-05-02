@@ -68,7 +68,26 @@ if os.getenv("IS_SLAVE"):
     tunnel.write("command=%s\n" % ssh_cmd )
     tunnel.close()
 
-# 扩展配置文件
+# 其他参数保存到扩展配置中
+## 默认binlog 过期时间为3天
+expire_logs_days = os.getenv("expire_logs_days")
+if expire_logs_days:
+  flag = 0
+  if os.path.isfile(extra_file):
+    extra = open(extra_file, "a+")
+    for line in extra.readlines():
+      if re.match(r'^expire_logs_days=\d+$', line):
+        flag = 1
+
+    if flag == 0:
+      extra.write('expire_logs_days=%s\n' % expire_logs_days )
+
+    extra.close()
+    if flag == 1:
+      os.system("sed -i '/expire_logs_days/s@=.*@=%s@' %s" % ( expire_logs_days, extra_file ) )
+  del flag
+
+# 启用扩展配置文件
 if os.path.isfile(extra_file):
   extra_file="--defaults-extra-file=" + extra_file
   os.system("sed -i 's@mysqld --innodb@mysqld %s --innodb@' %s" % ( extra_file, super_conf ) )

@@ -1,5 +1,5 @@
 master:
-  image: docker.xlands-inc.com/baoyu/mysql55:v20
+  image: docker.xlands-inc.com/baoyu/mysqld:v55.02
   volumes:
     - /home/xlands/mysql-master/:/home/xlands/mysql-master/
   environment:
@@ -10,6 +10,7 @@ master:
     - RSYNC_PASSWORD=rsyncd_pw
     - backup_ip=172.17.42.1
     - backup_dest=name_is_master
+    - expire_logs_days=6
   working_dir: /home/xlands/mysql-master
   ports:
     - "0.0.0.0:3306:3306"
