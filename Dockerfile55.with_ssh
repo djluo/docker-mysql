@@ -1,6 +1,6 @@
 # vim:set et ts=2 sw=2 syntax=dockerfile:
 
-FROM       docker.xlands-inc.com/baoyu/mysql55:v19
+FROM       docker.xlands-inc.com/baoyu/mysql55:v20
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
 RUN export http_proxy="http://172.17.42.1:8080/" \

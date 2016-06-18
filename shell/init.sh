@@ -59,6 +59,7 @@ EOF
 unset xtrab_pw
 
 /usr/bin/mysql -uroot -S ${SOCK} <<EOF
+grant all privileges on *.* to root@"172.17.%";
 grant shutdown on *.* to shutdown@'localhost';
 grant shutdown on *.* to shutdown@'127.0.0.1';
 

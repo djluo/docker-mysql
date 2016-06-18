@@ -31,3 +31,23 @@ slave_direct:
   working_dir: /home/xlands/mysql-slave-direct
   ports:
     - "0.0.0.0:3307:3306"
+
+slave_tunnel:
+  image: docker.xlands-inc.com/baoyu/mysql-slave55:v2
+  volumes:
+    - /home/xlands/mysql-slave-tunnel/:/home/xlands/mysql-slave-tunnel
+  environment:
+    - User_Id=1000
+    - innodb_buffer_pool_size=64M
+    - password=slave_mysql_root_pw
+    - IS_SLAVE=yes
+    - IS_TUNNEL=yes
+    - MASTER_PASSWORD=master_mysql_slave_pw
+    - MASTER_LOG_FILE=mysql-bin.000001
+    - MASTER_LOG_POS=107
+    - ssh_ip=172.17.42.1
+    - ssh_port=932
+    - ssh_user=tunnel
+  working_dir: /home/xlands/mysql-slave-tunnel/
+  ports:
+    - "0.0.0.0:3308:3306"

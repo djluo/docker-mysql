@@ -1,6 +1,6 @@
 # vim:set et ts=2 sw=2 syntax=dockerfile:
 
-FROM       docker.xlands-inc.com/baoyu/debian:py2
+FROM       docker.xlands-inc.com/baoyu/debian:py2v2
 MAINTAINER djluo <dj.luo@baoyugame.com>
 
 ENV PERCONA   https://repo.percona.com/apt/percona-release_0.1-3.jessie_all.deb
