@@ -135,14 +135,15 @@ rsync_pass  = os.getenv('RSYNC_PASSWORD')
 rsync_port  = os.getenv('RSYNC_PORT', 2873)
 backup_ip   = os.getenv('backup_ip')
 backup_dest = os.getenv('backup_dest', 'docker')
-backup_dest += "_" + os.uname()[1]
+#backup_dest += "_" + os.uname()[1]
 
 rsync_cmd = '(/usr/bin/rsync -al --port=%s' % rsync_port
 
 if rsync_pass:
-  passwd = open("/rsync.pass", "w", 0600)
+  passwd = open("/rsync.pass", "w")
   passwd.write("%s" % rsync_pass)
   passwd.close()
+  os.chmod("/rsync.pass", 0600)
   rsync_cmd += " --password-file=/rsync.pass"
 
 if backup_ip:
