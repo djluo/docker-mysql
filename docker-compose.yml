@@ -1,7 +1,7 @@
 master:
-  image: docker.xlands-inc.com/baoyu/mysqld:v55.04
+  image: docker.xlands-inc.com/baoyu/mysqld:5.5.49v6
   volumes:
-    - /home/xlands/mysql-master/:/home/xlands/mysql-master/
+    - /home/xlands/mysql-master2/:/home/xlands/mysql-master2/
   environment:
     - User_Id=1000
     - innodb_buffer_pool_size=384M
@@ -11,7 +11,7 @@ master:
     - backup_ip=172.17.42.1
     - backup_dest=name_is_master
     - expire_logs_days=6
-  working_dir: /home/xlands/mysql-master
+  working_dir: /home/xlands/mysql-master2/
   ports:
     - "0.0.0.0:3306:3306"
 slave_direct:
