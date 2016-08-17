@@ -32,6 +32,7 @@ COPY ./init.py          /init.py
 COPY ./conf/            /etc/mysql/
 COPY ./conf/my.cnf55    /etc/mysql/my.cnf
 COPY ./shell/           /
+COPY ./zabbix/          /zabbix/
 
 RUN ln -sv /xtrab.sh /bin/list   \
  && ln -sv /xtrab.sh /bin/backup \
