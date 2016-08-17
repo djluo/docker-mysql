@@ -1,5 +1,5 @@
 master:
-  image: docker.xlands-inc.com/baoyu/mysqld:5.5.49v6
+  image: docker.xlands-inc.com/baoyu/mysqld:5.5.49v7
   volumes:
     - /home/xlands/mysql-master2/:/home/xlands/mysql-master2/
   environment:
@@ -15,8 +15,10 @@ master:
   ports:
     - "0.0.0.0:3306:3306"
 slave_direct:
-  image: docker.xlands-inc.com/baoyu/mysqld:5.5.49v6
+  image: docker.xlands-inc.com/baoyu/mysqld:5.5.49v7
   volumes:
+    - /etc/passwd:/host-passwd
+    - /var/lib/zabbix:/var/lib/zabbix
     - /home/xlands/mysql-slave-direct/:/home/xlands/mysql-slave-direct
   environment:
     - User_Id=1000
@@ -28,6 +30,9 @@ slave_direct:
     - MASTER_PASSWORD=mysql_slave_pw
     - MASTER_LOG_FILE=mysql-bin.000001
     - MASTER_LOG_POS=107
+    - mysqld_name=slave_direct
+    - zabbix_pass=HGu4GnxVQ6iGRXe2xH2K
+    - mysqld_sock=/home/xlands/mysql-slave-direct/logs/mysql.sock
   working_dir: /home/xlands/mysql-slave-direct
   ports:
     - "0.0.0.0:3307:3306"

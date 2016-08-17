@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# encoding: UTF-8
+# vim:set et ts=2 sw=2 fileencoding=utf-8:
 
 import os
 import re
@@ -26,6 +26,35 @@ extra_file  = working_dir + "/extra-my.cnf"
 super_conf  = "/etc/supervisor/supervisord.conf"
 slave_conf  = "/etc/mysql/slave-extra-my.cnf"
 
+# 获取宿主上zabbix用户的组id
+def get_zabbix_gid(passwd_file, user="zabbix"):
+  group_id = 1000;
+  if os.path.isfile(passwd_file):
+    pw = open(passwd_file, "r")
+    for line in pw:
+      fields = line.split(':')
+      if str(fields[0]) == str(user):
+        group_id = int(fields[3])
+        break
+    pw.close()
+  return group_id
+
+# 用于zabbix监控主从状态
+def write_zabbix_my_cnf(name, zabbix_pass, mysqld_sock, zabbix_user="zabbix"):
+  my_dir = "/var/lib/zabbix/"
+  my_cnf = my_dir + "." + name + ".cnf"
+  group_id= get_zabbix_gid("/host-passwd")
+
+  if os.path.isdir(my_dir):
+    open_my_cnf = open(my_cnf, "w")
+    open_my_cnf.write("[client]\n")
+    open_my_cnf.write("user     = %s\n" % zabbix_user)
+    open_my_cnf.write("password = %s\n" % zabbix_pass)
+    open_my_cnf.write("socket   = %s\n" % mysqld_sock)
+    open_my_cnf.close()
+    os.chmod(my_cnf, 0640  )
+    os.chown(my_cnf, -1, group_id)
+
 # 调整配置文件的路径
 if not os.path.isfile("/etc/mysql/modify_complete"):
   os.system("sed -i 's@/MYSQL@%s@' /etc/mysql/my.cnf"     % working_dir)
@@ -40,6 +69,12 @@ if pool_size:
 
 # 从库模式
 if os.getenv("IS_SLAVE"):
+  # 写入zabbix用的文件
+  mysqld_name = os.getenv("mysqld_name")
+  zabbix_pass = os.getenv("zabbix_pass")
+  mysqld_sock = os.getenv("mysqld_sock")
+  write_zabbix_my_cnf(mysqld_name,zabbix_pass,mysqld_sock)
+
   # 从库与主库差异配置文件, 主从库能能直连模式
   if not os.path.isfile(extra_file):
     os.system("cp -fv %s %s" % ( slave_conf, extra_file) )
