@@ -9,6 +9,13 @@ if [ "x$IS_TUNNEL" != "x" -a "x$WITH_SSH" != "x" ];then
 fi
 
 /usr/bin/mysql -S ${SOCK} -uroot $pw <<EOF
+CREATE DATABASE IF NOT EXISTS oc;
+CREATE TABLE    IF NOT EXISTS oc.timestamp (ts TIMESTAMP);
+grant select on oc.timestamp to 'zabbix'@'localhost'     identified by '${zabbix_pass}';
+grant select on oc.timestamp to 'zabbix'@'127.0.0.1'     identified by '${zabbix_pass}';
+EOF
+
+/usr/bin/mysql -S ${SOCK} -uroot $pw <<EOF
 slave stop;
 
 CHANGE MASTER TO
@@ -21,4 +28,5 @@ CHANGE MASTER TO
 
 slave start;
 EOF
+
 [ $? -eq 0 ] && touch ./data/slave_complete
